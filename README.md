@@ -1,3 +1,12 @@
+npm install --save @angular/material @angular/cdk
+npm install --save @angular/animations
+ng generate module material 
+
+npm install material-design-icons
+
+import 'hammerjs'; into polyfills.ts
+
+
 # SimpleSystem
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.9.
