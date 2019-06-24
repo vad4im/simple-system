@@ -1,0 +1,94 @@
+<div class="div-type">
+  <!--<h2>{{course?.description}}</h2>-->
+  <!--<img class="course-thumbnail" [src]="course?.iconUrl">-->
+
+  <mat-form-field>
+    <input matInput placeholder="Search div type" #input>
+  </mat-form-field>
+
+  <div class="spinner-container" *ngIf="dataSource.loading$ | async">
+    <mat-spinner></mat-spinner>
+  </div>
+  <!--matSortActive="ID" matSortDirection="asc"-->
+  <mat-table class="lessons-table mat-elevation-z8" [dataSource]="dataSource"
+             matSort matSortDisableClear>
+
+    <!--<ng-container matColumnDef="ID">-->
+      <!--<mat-header-cell *matHeaderCellDef mat-sort-header>#</mat-header-cell>-->
+      <!--<mat-cell *matCellDef="let lesson">{{lesson.ID}}</mat-cell>-->
+    <!--</ng-container>-->
+<!---->
+    <!--<ng-container matColumnDef="CODE">-->
+      <!--<mat-header-cell *matHeaderCellDef>CODE</mat-header-cell>-->
+      <!--<mat-cell class="description-cell"-->
+                <!--*matCellDef="let lesson">{{lesson.CODE}}</mat-cell>-->
+    <!--</ng-container>-->
+<!---->
+    <!--<ng-container matColumnDef="NAME">-->
+      <!--<mat-header-cell *matHeaderCellDef>NAME</mat-header-cell>-->
+      <!--<mat-cell class="duration-cell"-->
+                <!--*matCellDef="let lesson">{{lesson.NAME}}</mat-cell>-->
+    <!--</ng-container>-->
+
+    <ng-container *ngFor="let col of cells"  [matColumnDef]="col.name">
+
+      <!--<mat-header-cell #thenBlock *matHeaderCellDef mat-sort-header> {{col.label}} </mat-header-cell>-->
+
+      <mat-header-cell *matHeaderCellDef mat-sort-header [disabled]="isSortingDisabled(col.name)">
+        <div *ngIf="!col.filterData"> {{col.label}} </div>
+        <div *ngIf="col.filterData">
+          <div class="header">
+            {{col.filterData.headerName}}
+            <button mat-button class="btn-toggle" [matMenuTriggerFor]="menu" (click)="$event.stopPropagation()">
+              <mat-icon>keyboard_arrow_down</mat-icon>
+            </button>
+          </div>
+          <mat-menu #menu>
+            <div mat-menu-item mat-filter-item [disableRipple]="true" class="menu-title">
+              {{col.filterData.filterName}}
+            </div>
+             <div mat-menu-item mat-filter-item [disableRipple]="true">
+              <mat-form-field>
+                <mat-select [panelClass]="'mat-elevation-z10'" placeholder='Conditions' [(value)]="col.filterData.cond">
+                  <mat-option *ngFor="let  condition of col.filterData.condList" [value]="condition.value">{{condition.label}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div mat-menu-item mat-filter-item [disableRipple]="true">
+              <mat-form-field>
+                <input matInput placeholder="Value1" [(ngModel)]="col.filterData.value1">
+              </mat-form-field>
+            </div>
+            <div mat-menu-item mat-filter-item [disableRipple]="true">
+              <mat-form-field>
+                <input matInput placeholder="Value2" [(ngModel)]="col.filterData.value2">
+              </mat-form-field>
+            </div>
+            <div mat-menu-item mat-filter-item [disableRipple]="true">
+              <button mat-raised-button (click)="clearFilterColumn([col.name])">Clear</button>
+              <button mat-raised-button color="primary" (click)="applyFilter()">Search</button>
+            </div>
+          </mat-menu>
+          </div>
+      </mat-header-cell>
+
+      <mat-cell *matCellDef="let row"> {{row[col.name]}} </mat-cell>
+    </ng-container>
+
+
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  </mat-table>
+
+  <mat-paginator [length]="9" [pageSize]="3"
+                 [pageSizeOptions]="[3, 5, 10]"></mat-paginator>
+</div>
+
+
+
+
+
+
+
+

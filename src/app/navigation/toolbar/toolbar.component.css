@@ -1,0 +1,7 @@
+.fill-remaining-space {
+  flex: 1 1 auto;
+}
+.toolbar-color {
+  background-color: #424242;
+  color: white;
+}

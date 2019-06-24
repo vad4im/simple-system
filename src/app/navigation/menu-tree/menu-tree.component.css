@@ -1,0 +1,14 @@
+.mat-tree-node {
+  font-size: 12px;
+  width: 100%;
+  min-height: 20px;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.background-highlight {
+  background: #E8EAF6;
+}

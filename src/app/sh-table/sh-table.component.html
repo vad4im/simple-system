@@ -1,0 +1,32 @@
+<div class="course_22">
+
+  <mat-form-field>
+    <input matInput placeholder="Search lessons 2" #input>
+  </mat-form-field>
+
+  <!--<div class="spinner-container" *ngIf="dataSource.loading$ | async">-->
+    <!--<mat-spinner></mat-spinner>-->
+  <!--</div>-->
+
+  <mat-table class="lessons-table mat-elevation-z8"
+             [dataSource]="dataSource"
+             matSort
+              [matSortActive]=parentSettings.sort.active
+              [matSortDirection]=parentSettings.sort.direction
+             matSortDisableClear>
+     <!--the is  not required attribute mat-sort-header  in mat-header-cell-->
+    <ng-container *ngFor="let col of parentSettings.cells"  [matColumnDef]="col.name">
+      <mat-header-cell *matHeaderCellDef mat-sort-header> {{col.label}} </mat-header-cell>
+      <mat-cell *matCellDef="let row"> {{row[col.name]}} </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="parentSettings.sellVisible"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: parentSettings.sellVisible;"
+             (click)="selection.toggle(row)">
+    </mat-row>
+
+  </mat-table>
+
+  <mat-paginator [length]="course?.lessonsCount" [pageSize]="3"
+                 [pageSizeOptions]="[3, 5, 10]"></mat-paginator>
+</div>

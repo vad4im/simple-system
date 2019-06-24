@@ -1,0 +1,35 @@
+{
+  "name": "query-string-parser",
+  "title": "Query String Parser",
+  "description": "Rack style query string parser for Node.js.",
+  "keywords": [
+    "query",
+    "query string",
+    "url",
+    "search",
+    "rack",
+    "parameter"
+  ],
+  "version": "0.2.3",
+  "license": "MIT",
+  "author": {
+    "name": "Zhang Kaiyu",
+    "email": "yeannylam@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhangkaiyulw/query-parser"
+  },
+  "homepage": "https://github.com/zhangkaiyulw/query-parser",
+  "main": "./query_string_parser.js",
+  "devDependencies": {
+    "gulp": "~3.8",
+    "gulp-util": "~2.2",
+    "gulp-uglify": "~0.2",
+    "gulp-concat": "~2.1",
+    "gulp-jshint": "~1.10",
+    "gulp-babel": "~5.2",
+    "gulp-mocha": "~2.1",
+    "mocha": "~2.3"
+  }
+}

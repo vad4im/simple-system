@@ -1,0 +1,13 @@
+<mat-sidenav-container class="sidenav" *ngIf="shouldRun">
+  <mat-sidenav #sidenavLeft
+               [(opened)]="opened"
+               mode="side"
+               [fixedInViewport]="shouldRun"
+               fixedTopGap="60"
+               class="sidenav">
+    <app-menu-tree></app-menu-tree>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>
