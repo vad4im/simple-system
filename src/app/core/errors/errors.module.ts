@@ -6,8 +6,7 @@ import { RouterModule } from '@angular/router';
 
 import { ErrorsHandler } from './errors-handler/errors-handler';
 import { ErrorsService } from './errors-service/errors.service';
-import { ServerErrorsInterceptor } from './server-errors-interceptor/server-errors.interceptor'; 
-
+import { ServerErrorsInterceptor } from './server-errors-interceptor/server-errors.interceptor';
 
 import { ErrorRoutingModule } from './errors-routing/errors-routing.module';
 
