@@ -24,6 +24,8 @@ export class Cell {
       return null;
     }
   }
+
+
   public getCellFilter() {
     if (this.filterData.cond){
       const queryStringParser = require('../query-parser/query_string_parser.js');

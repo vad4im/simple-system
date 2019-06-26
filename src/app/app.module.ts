@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import {ErrorHandler, NgModule} from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule } from './navigation/app-routing.module';
@@ -18,7 +18,7 @@ import {ClaimsService} from './services/claims-service';
 import { SimpleTableComponent } from './simple-table/simple-table.component';
 import { CourseComponent } from './course/course.component';
 import {CoursesService} from './course/courses.service';
-import {HttpClient, HttpHandler, HttpClientModule } from '@angular/common/http';
+import {HttpClient, HttpHandler, HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
 import {CourseResolver} from './course/course.resolver';
 import { ShTableComponent } from './sh-table/sh-table.component';
 import { IncidentComponent } from './incident/incident.component';
@@ -27,6 +27,10 @@ import {DivTypeService} from './div-type/div-type.service';
 import {FilterItemDirective} from './div-type/filter-item.directive';
 import { FormsModule } from '@angular/forms';
 import { TableFilteringComponent } from './table-filtering/table-filtering.component';
+import {ServerErrorInterceptor} from './error-handle/server-error.interceptor';
+import {GlobalErrorHandler} from './error-handle/global-error-handler';
+import {ErrorDialogService} from './error-handle/error-dialog/errordialog.service';
+import {ErrorDialogComponent } from './error-handle/error-dialog/error-dialog.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +47,8 @@ import { TableFilteringComponent } from './table-filtering/table-filtering.compo
     IncidentComponent,
     DivTypeComponent,
     FilterItemDirective,
-    TableFilteringComponent
+    TableFilteringComponent,
+    ErrorDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -59,8 +64,12 @@ import { TableFilteringComponent } from './table-filtering/table-filtering.compo
               ClaimsService,
               CoursesService,
               DivTypeService,
+    ErrorDialogService,
               HttpClient,
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    { provide: HTTP_INTERCEPTORS, useClass: ServerErrorInterceptor, multi: true },
               CourseResolver],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [ErrorDialogComponent]
 })
 export class AppModule { }

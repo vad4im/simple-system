@@ -7,6 +7,7 @@ import {DivTypeService} from './div-type.service';
 import {fromEvent, merge} from 'rxjs/index';
 import {debounceTime, distinctUntilChanged, tap} from 'rxjs/internal/operators';
 import {Cell} from '../mat-table-cells/cell';
+import {ErrorDialogService} from '../error-handle/error-dialog/errordialog.service';
 
 @Component({
   selector: 'app-div-type',
@@ -30,18 +31,19 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
 
   public fp = new MatTableDataSource;
 
-  public clls = [ {name:'ID',label:'ID',      sorting: null,   filteringType: null}
-                  ,{name:'CODE',label:'CODE', sorting: 'desc', filteringType: null}
-                  ,{name:'NAME',label:'NAME', sorting: 'asc',  filteringType:'string'}]
+  public clls = [{name: 'ID', label: 'ID', sorting: null, filteringType: null}
+    , {name: 'CODE', label: 'CODE', sorting: 'desc', filteringType: null}
+    , {name: 'NAME', label: 'NAME', sorting: 'asc', filteringType: 'string'}]
 
-  public cells: Cell[] =[];
+  public cells: Cell[] = [];
 
   constructor(private route: ActivatedRoute,
-              private coursesService: DivTypeService) {
+              private divTypeService: DivTypeService,
+              public errorDialogService: ErrorDialogService) {
   }
 
   ngOnInit() {
-    this.dataSource = new DivTypeDataSource(this.coursesService);
+    this.dataSource = new DivTypeDataSource(this.divTypeService, this.errorDialogService);
     this.dataSource.getDivType('', 'asc', 0, 3);
     this.buildFilterSruct();
 
@@ -89,17 +91,17 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
 
 
   applyFilter() {
-    for ( let i = 0; i < this.cells.length; i++) {
+    for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].filterData) {
         this.filter = this.cells[i].getCellFilter();
-        console.log(' applyFilter() !!!' + this.filter );
+        console.log(' applyFilter() !!!' + this.filter);
       }
     }
     this.loadDivTypePage();
   }
 
   clearFilterColumn(columnKey: string): void {
-    for ( let i = 0; i < this.cells.length; i++) {
+    for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].name == columnKey) {
         this.cells[i].filterData.clearFilter();
       }
@@ -108,9 +110,8 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
     this.applyFilter();
   }
 
-  public isSortingDisabled(columnText: string): boolean
-  {
-    for ( let i = 0; i < this.cells.length; i++) {
+  public isSortingDisabled(columnText: string): boolean {
+    for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].name == columnText) {
         return this.cells[i].isSorting;
       }
@@ -120,7 +121,7 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
 
 
   buildFilterSruct() {
-    for ( let i = 0; i < this.clls.length; i++) {
+    for (let i = 0; i < this.clls.length; i++) {
       this.cells.push(new Cell(this.clls[i].name, this.clls[i].label, this.clls[i].sorting, this.clls[i].filteringType));
     }
   }
