@@ -1,4 +1,4 @@
-import {FilterCol} from '../query-filter/query-filter';
+import {FilterCol} from '../core/db-query/query-filter';
 
 export class Cell {
   name: string;
@@ -28,7 +28,7 @@ export class Cell {
 
   public getCellFilter() {
     if (this.filterData.cond){
-      const queryStringParser = require('../query-parser/query_string_parser.js');
+      const queryStringParser = require('../core/db-query/query-parser/query_string_parser.js');
       return queryStringParser.toQuery({'cell': this.name ,
               "type": this.filterType,
               "op"  : this.filterData.cond,

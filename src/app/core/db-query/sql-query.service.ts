@@ -1,16 +1,15 @@
 import {Injectable} from '@angular/core';
-import {DivType} from './div-type';
 import {map} from 'rxjs/operators';
 import {Observable} from 'rxjs/index';
 import {HttpClient, HttpParams} from '@angular/common/http';
 
 @Injectable()
-export class DivTypeService {
+export class SqlQueryService {
   private clausesUrl = 'http://localhost:8222';  // URL to web api
   constructor(private http: HttpClient) {
   }
 
-  getAllDivTypes(): Observable<DivType[]> {
+  getAllDivTypes(): Observable<[]> {
     return this.http.get('/dict/sql/div-type', {
       params: new HttpParams()
         .set('pageNumber', "0")
@@ -21,10 +20,11 @@ export class DivTypeService {
       );
   }
 
-  getDivTypes(filter = '', sortOrder = 'asc',
-              pageNumber = 0, pageSize = 3): Observable<DivType[]> {
+  getDivTypes(objName, filter = '', sortOrder = 'asc',
+              pageNumber = 0, pageSize = 3): Observable<[]> {
     return this.http.get(this.clausesUrl + '/dict/sql/div-type', {
       params: new HttpParams()
+        .set('objName', objName)
         .set('filter', filter)
         .set('sortOrder', sortOrder)
         .set('pageNumber', pageNumber.toString())

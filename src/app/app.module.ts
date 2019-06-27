@@ -4,7 +4,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule } from './navigation/app-routing.module';
 import { AppComponent } from './app.component';
-import { MaterialModule } from './material/material.module';
+import { MaterialModule } from './core/material/material.module';
 import { ToolbarComponent } from './navigation/toolbar/toolbar.component';
 import { SidenavComponent } from './navigation/sidenav/sidenav.component';
 import {LayoutService} from './services/layout-service';
@@ -23,14 +23,14 @@ import {CourseResolver} from './course/course.resolver';
 import { ShTableComponent } from './sh-table/sh-table.component';
 import { IncidentComponent } from './incident/incident.component';
 import { DivTypeComponent } from './div-type/div-type.component';
-import {DivTypeService} from './div-type/div-type.service';
 import {FilterItemDirective} from './div-type/filter-item.directive';
 import { FormsModule } from '@angular/forms';
 import { TableFilteringComponent } from './table-filtering/table-filtering.component';
-import {ServerErrorInterceptor} from './error-handle/server-error.interceptor';
-import {GlobalErrorHandler} from './error-handle/global-error-handler';
-import {ErrorDialogService} from './error-handle/error-dialog/errordialog.service';
-import {ErrorDialogComponent } from './error-handle/error-dialog/error-dialog.component';
+import {ServerErrorInterceptor} from './core/error-handle/server-error.interceptor';
+import {GlobalErrorHandler} from './core/error-handle/global-error-handler';
+import {ErrorDialogService} from './core/error-handle/error-dialog/errordialog.service';
+import {ErrorDialogComponent } from './core/error-handle/error-dialog/error-dialog.component';
+import {SqlQueryService} from './core/db-query/sql-query.service';
 
 @NgModule({
   declarations: [
@@ -63,7 +63,7 @@ import {ErrorDialogComponent } from './error-handle/error-dialog/error-dialog.co
               MessageService,
               ClaimsService,
               CoursesService,
-              DivTypeService,
+    SqlQueryService,
     ErrorDialogService,
               HttpClient,
     { provide: ErrorHandler, useClass: GlobalErrorHandler },

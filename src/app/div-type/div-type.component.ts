@@ -1,13 +1,13 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {DivType} from './div-type';
-import {DivTypeDataSource} from './div-type.datasource';
 import {MatPaginator, MatSort, MatTableDataSource} from '@angular/material';
 import {ActivatedRoute} from '@angular/router';
-import {DivTypeService} from './div-type.service';
 import {fromEvent, merge} from 'rxjs/index';
 import {debounceTime, distinctUntilChanged, tap} from 'rxjs/internal/operators';
 import {Cell} from '../mat-table-cells/cell';
-import {ErrorDialogService} from '../error-handle/error-dialog/errordialog.service';
+import {ErrorDialogService} from '../core/error-handle/error-dialog/errordialog.service';
+import {SqlQueryService} from '../core/db-query/sql-query.service';
+import {SqlQueryDataSource} from '../core/db-query/sql-query.datasource';
 
 @Component({
   selector: 'app-div-type',
@@ -19,7 +19,7 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
 
   divType: DivType;
 
-  dataSource: DivTypeDataSource;
+  dataSource: SqlQueryDataSource;
   public filter: any;
   public displayedColumns: string[] = ['ID', 'CODE', 'NAME'];
 
@@ -38,13 +38,13 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
   public cells: Cell[] = [];
 
   constructor(private route: ActivatedRoute,
-              private divTypeService: DivTypeService,
+              private sqlQueryService: SqlQueryService,
               public errorDialogService: ErrorDialogService) {
   }
 
   ngOnInit() {
-    this.dataSource = new DivTypeDataSource(this.divTypeService, this.errorDialogService);
-    this.dataSource.getDivType('', 'asc', 0, 3);
+    this.dataSource = new SqlQueryDataSource(this.sqlQueryService, this.errorDialogService);
+    this.dataSource.getDivType('divisionType', '', 'asc', 1, 3);
     this.buildFilterSruct();
 
     // fp
@@ -129,6 +129,7 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
   loadDivTypePage() {
 // console.log('loadDivTypePage() ->');
     this.dataSource.getDivType(
+      'divisionType',
       this.filter,
       this.sort.direction,
       this.paginator.pageIndex,
