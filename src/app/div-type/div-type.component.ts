@@ -21,7 +21,6 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
 
   dataSource: SqlQueryDataSource;
   public filter: any;
-  public displayedColumns: string[] = ['ID', 'CODE', 'NAME'];
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -30,10 +29,11 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
   @ViewChild('input') input: ElementRef;
 
   public fp = new MatTableDataSource;
-
-  public clls = [{name: 'ID', label: 'ID', sorting: null, filteringType: null}
-    , {name: 'CODE', label: 'CODE', sorting: 'desc', filteringType: null}
-    , {name: 'NAME', label: 'NAME', sorting: 'asc', filteringType: 'string'}]
+  public paginatorDisable = false;
+  public displayedColumns: string[] = ['ID', 'CODE', 'NAME'];
+  public clls = [{name: 'ID', label: 'ID', sorting: null, filteringType: null},
+    {name: 'CODE', label: 'CODE', sorting: 'desc', filteringType: null},
+    {name: 'NAME', label: 'NAME', sorting: 'asc', filteringType: 'string'}]
 
   public cells: Cell[] = [];
 
@@ -121,8 +121,16 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
 
 
   buildFilterSruct() {
-    for (let i = 0; i < this.clls.length; i++) {
-      this.cells.push(new Cell(this.clls[i].name, this.clls[i].label, this.clls[i].sorting, this.clls[i].filteringType));
+    for (let i = 0; i < this.displayedColumns.length; i++) {
+      let currclls = {name: this.displayedColumns[i], label: this.displayedColumns[i], sorting: null, filteringType: null};
+      for (let j = 0; j < this.clls.length; j++) {
+        if (this.clls[j].name === this.displayedColumns[i]) {
+          currclls.sorting =  this.clls[j].sorting
+          currclls.filteringType = this.clls[j].filteringType
+        }
+      }
+      console.log('currclls --->' + JSON.stringify(currclls))
+      this.cells.push(new Cell(currclls.name, currclls.label, currclls.sorting, currclls.filteringType));
     }
   }
 
