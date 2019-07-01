@@ -6,12 +6,16 @@ import {CourseComponent} from '../course/course.component';
 import {CourseResolver} from '../course/course.resolver';
 import {DivTypeComponent} from '../div-type/div-type.component';
 import {TableFilteringComponent} from '../table-filtering/table-filtering.component';
+import {PersonListComponent} from '../person-list/person-list.component';
+import {TableSqlSourceComponent} from '../table-sql-source/table-sql-source.component';
 
 const APP_ROUTES: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
   {path: 'about', component: AboutComponent },
   {path: 'home', component: HomeComponent },
   {path: 'course', component: CourseComponent, resolve: {course: CourseResolver}},
+  {path: 'person-list', component: PersonListComponent},
+  {path: 'generalized-table', component: TableSqlSourceComponent},
   {path: 'dictionary', children: [
     {path: 'sql', children: [
       {path: 'div-type', component: DivTypeComponent},

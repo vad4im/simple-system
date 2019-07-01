@@ -12,20 +12,20 @@
              matSort matSortDisableClear>
 
     <!--<ng-container matColumnDef="ID">-->
-      <!--<mat-header-cell *matHeaderCellDef mat-sort-header>#</mat-header-cell>-->
-      <!--<mat-cell *matCellDef="let lesson">{{lesson.ID}}</mat-cell>-->
+    <!--<mat-header-cell *matHeaderCellDef mat-sort-header>#</mat-header-cell>-->
+    <!--<mat-cell *matCellDef="let lesson">{{lesson.ID}}</mat-cell>-->
     <!--</ng-container>-->
-<!---->
+    <!---->
     <!--<ng-container matColumnDef="CODE">-->
-      <!--<mat-header-cell *matHeaderCellDef>CODE</mat-header-cell>-->
-      <!--<mat-cell class="description-cell"-->
-                <!--*matCellDef="let lesson">{{lesson.CODE}}</mat-cell>-->
+    <!--<mat-header-cell *matHeaderCellDef>CODE</mat-header-cell>-->
+    <!--<mat-cell class="description-cell"-->
+    <!--*matCellDef="let lesson">{{lesson.CODE}}</mat-cell>-->
     <!--</ng-container>-->
-<!---->
+    <!---->
     <!--<ng-container matColumnDef="NAME">-->
-      <!--<mat-header-cell *matHeaderCellDef>NAME</mat-header-cell>-->
-      <!--<mat-cell class="duration-cell"-->
-                <!--*matCellDef="let lesson">{{lesson.NAME}}</mat-cell>-->
+    <!--<mat-header-cell *matHeaderCellDef>NAME</mat-header-cell>-->
+    <!--<mat-cell class="duration-cell"-->
+    <!--*matCellDef="let lesson">{{lesson.NAME}}</mat-cell>-->
     <!--</ng-container>-->
 
     <!--for coll of cells-->
@@ -52,7 +52,7 @@
             <div mat-menu-item mat-filter-item [disableRipple]="true" class="menu-title">
               {{col.filterData.filterName}}
             </div>
-             <div mat-menu-item mat-filter-item [disableRipple]="true">
+            <div mat-menu-item mat-filter-item [disableRipple]="true">
               <mat-form-field>
                 <mat-select [panelClass]="'mat-elevation-z10'" placeholder='Conditions' [(value)]="col.filterData.cond">
                   <mat-option *ngFor="let  condition of col.filterData.condList" [value]="condition.value">{{condition.label}}</mat-option>
@@ -74,13 +74,13 @@
               <button mat-raised-button color="primary" (click)="applyFilter()">Search</button>
             </div>
           </mat-menu>
-          </div>
+        </div>
 
         <!--editable header-->
         <div *ngIf="col.label == 'actionsColumn' ">
-              <button mat-icon-button color="accent" (click)="dataSource.createNew()">
-                <mat-icon>add</mat-icon>
-              </button>
+          <button mat-icon-button color="accent" (click)="dataSource.createNew()">
+            <mat-icon>add</mat-icon>
+          </button>
         </div>
 
       </mat-header-cell>
@@ -103,7 +103,7 @@
       </div>
 
       <div *ngIf= "!(col.label == 'actionsColumn') ">
-         <mat-cell *matCellDef="let row"> {{row[col.name]}} </mat-cell>
+        <mat-cell *matCellDef="let row"> {{row[col.name]}} </mat-cell>
       </div>
 
     </ng-container>

@@ -24,13 +24,16 @@ import { ShTableComponent } from './sh-table/sh-table.component';
 import { IncidentComponent } from './incident/incident.component';
 import { DivTypeComponent } from './div-type/div-type.component';
 import {FilterItemDirective} from './div-type/filter-item.directive';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TableFilteringComponent } from './table-filtering/table-filtering.component';
 import {ServerErrorInterceptor} from './core/error-handle/server-error.interceptor';
 import {GlobalErrorHandler} from './core/error-handle/global-error-handler';
 import {ErrorDialogService} from './core/error-handle/error-dialog/errordialog.service';
 import {ErrorDialogComponent } from './core/error-handle/error-dialog/error-dialog.component';
 import {SqlQueryService} from './core/db-query/sql-query.service';
+import { PersonListComponent } from './person-list/person-list.component';
+import { TableSqlSourceComponent } from './table-sql-source/table-sql-source.component';
+
 
 @NgModule({
   declarations: [
@@ -48,7 +51,9 @@ import {SqlQueryService} from './core/db-query/sql-query.service';
     DivTypeComponent,
     FilterItemDirective,
     TableFilteringComponent,
-    ErrorDialogComponent
+    ErrorDialogComponent,
+    PersonListComponent,
+    TableSqlSourceComponent
   ],
   imports: [
     BrowserModule,
@@ -56,7 +61,8 @@ import {SqlQueryService} from './core/db-query/sql-query.service';
     BrowserAnimationsModule,
     MaterialModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ],
   providers: [LayoutService,
               MenuTreeService,

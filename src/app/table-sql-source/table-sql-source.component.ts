@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {DivType} from './div-type';
+import {DivType} from '../div-type/div-type';
 import {MatPaginator, MatSort, MatTableDataSource} from '@angular/material';
 import {ActivatedRoute} from '@angular/router';
 import {fromEvent, merge} from 'rxjs/index';
@@ -10,13 +10,11 @@ import {SqlQueryService} from '../core/db-query/sql-query.service';
 import {SqlQueryDataSource} from '../core/db-query/sql-query.datasource';
 
 @Component({
-  selector: 'app-div-type',
-  templateUrl: './div-type.component.html',
-  styleUrls: ['./div-type.component.css']
+  selector: 'app-table-sql-source',
+  templateUrl: './table-sql-source.component.html',
+  styleUrls: ['./table-sql-source.component.css']
 })
-
-
-export class DivTypeComponent implements OnInit, AfterViewInit {
+export class TableSqlSourceComponent implements OnInit, AfterViewInit {
 
   divType: DivType;
 
@@ -146,4 +144,5 @@ export class DivTypeComponent implements OnInit, AfterViewInit {
       this.paginator.pageIndex,
       this.paginator.pageSize);
   }
+
 }
