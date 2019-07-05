@@ -7,6 +7,10 @@ npm install material-design-icons
 import 'hammerjs'; into polyfills.ts
 
 
+npm i @ng-dynamic-forms/core -S
+npm i @ng-dynamic-forms/ui-material -S
+
+
 # SimpleSystem
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.9.

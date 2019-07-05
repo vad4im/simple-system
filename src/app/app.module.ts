@@ -16,23 +16,30 @@ import { ClaimsComponent } from './claims/claims.component';
 import {MessageService} from './services/message.service';
 import {ClaimsService} from './services/claims-service';
 import { SimpleTableComponent } from './simple-table/simple-table.component';
-import { CourseComponent } from './course/course.component';
-import {CoursesService} from './course/courses.service';
+// import { CourseComponent } from './course/course.component';
+// import {CoursesService} from './course/courses.service';
 import {HttpClient, HttpHandler, HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
-import {CourseResolver} from './course/course.resolver';
+// import {CourseResolver} from './course/course.resolver';
 import { ShTableComponent } from './sh-table/sh-table.component';
 import { IncidentComponent } from './incident/incident.component';
-import { DivTypeComponent } from './div-type/div-type.component';
-import {FilterItemDirective} from './div-type/filter-item.directive';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TableFilteringComponent } from './table-filtering/table-filtering.component';
 import {ServerErrorInterceptor} from './core/error-handle/server-error.interceptor';
 import {GlobalErrorHandler} from './core/error-handle/global-error-handler';
 import {ErrorDialogService} from './core/error-handle/error-dialog/errordialog.service';
 import {ErrorDialogComponent } from './core/error-handle/error-dialog/error-dialog.component';
-import {SqlQueryService} from './core/db-query/sql-query.service';
+import {SqlQueryService} from './table-sql-source/sql-query.service';
 import { PersonListComponent } from './person-list/person-list.component';
 import { TableSqlSourceComponent } from './table-sql-source/table-sql-source.component';
+import { TableSqlCrudComponent } from './table-sql-crud/table-sql-crud.component';
+import {DataService} from './table-sql-crud/services/data.service';
+import { DeleteDialogComponent } from './table-sql-crud/dialogs/delete-dialog/delete-dialog.component';
+import { AddDialogComponent } from './table-sql-crud/dialogs/add-dialog/add-dialog.component';
+import { EditDialogComponent } from './table-sql-crud/dialogs/edit-dialog/edit-dialog.component';
+import { NgDynamicFormComponent } from './core/ng-dynamic-form/ng-dynamic-form.component';
+import { DynamicFormsCoreModule } from '@ng-dynamic-forms/core';
+import { DynamicFormsMaterialUIModule } from '@ng-dynamic-forms/ui-material';
+import { TableEditDialogComponent } from './table-sql-source/dialog/table-edit-dialog/table-edit-dialog.component';
 
 
 @NgModule({
@@ -45,15 +52,19 @@ import { TableSqlSourceComponent } from './table-sql-source/table-sql-source.com
     MenuTreeComponent,
     ClaimsComponent,
     SimpleTableComponent,
-    CourseComponent,
+    // CourseComponent,
     ShTableComponent,
     IncidentComponent,
-    DivTypeComponent,
-    FilterItemDirective,
     TableFilteringComponent,
     ErrorDialogComponent,
     PersonListComponent,
-    TableSqlSourceComponent
+    TableSqlSourceComponent,
+    TableSqlCrudComponent,
+    DeleteDialogComponent,
+    AddDialogComponent,
+    EditDialogComponent,
+    NgDynamicFormComponent,
+    TableEditDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -62,20 +73,30 @@ import { TableSqlSourceComponent } from './table-sql-source/table-sql-source.com
     MaterialModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    DynamicFormsCoreModule,
+    DynamicFormsMaterialUIModule
+
   ],
   providers: [LayoutService,
               MenuTreeService,
               MessageService,
               ClaimsService,
-              CoursesService,
+              // CoursesService,
+    DataService,
     SqlQueryService,
     ErrorDialogService,
               HttpClient,
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
-    { provide: HTTP_INTERCEPTORS, useClass: ServerErrorInterceptor, multi: true },
-              CourseResolver],
+    { provide: HTTP_INTERCEPTORS, useClass: ServerErrorInterceptor, multi: true }
+    ],
   bootstrap: [AppComponent],
-  entryComponents: [ErrorDialogComponent]
+  entryComponents: [ErrorDialogComponent,
+    DeleteDialogComponent,
+    EditDialogComponent,
+    AddDialogComponent,
+    NgDynamicFormComponent,
+    TableEditDialogComponent]
 })
+
 export class AppModule { }

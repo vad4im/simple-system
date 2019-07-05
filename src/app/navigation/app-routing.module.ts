@@ -2,23 +2,23 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import {HomeComponent} from '../forms/home/home.component';
 import {AboutComponent} from '../forms/about/about.component';
-import {CourseComponent} from '../course/course.component';
-import {CourseResolver} from '../course/course.resolver';
-import {DivTypeComponent} from '../div-type/div-type.component';
+// import {CourseComponent} from '../course/course.component';
+// import {CourseResolver} from '../course/course.resolver';
 import {TableFilteringComponent} from '../table-filtering/table-filtering.component';
 import {PersonListComponent} from '../person-list/person-list.component';
 import {TableSqlSourceComponent} from '../table-sql-source/table-sql-source.component';
+import {TableSqlCrudComponent} from "../table-sql-crud/table-sql-crud.component";
 
 const APP_ROUTES: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
   {path: 'about', component: AboutComponent },
   {path: 'home', component: HomeComponent },
-  {path: 'course', component: CourseComponent, resolve: {course: CourseResolver}},
+  // {path: 'course', component: CourseComponent, resolve: {course: CourseResolver}},
   {path: 'person-list', component: PersonListComponent},
-  {path: 'generalized-table', component: TableSqlSourceComponent},
+  {path: 'TableSqlSourceComponent', component: TableSqlSourceComponent},
+  {path: 'SqlCrud', component: TableSqlCrudComponent},
   {path: 'dictionary', children: [
     {path: 'sql', children: [
-      {path: 'div-type', component: DivTypeComponent},
       {path: 'table-filtering', component: TableFilteringComponent}
     ]}
   ]}

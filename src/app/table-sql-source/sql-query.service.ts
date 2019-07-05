@@ -2,10 +2,11 @@ import {Injectable} from '@angular/core';
 import {map} from 'rxjs/operators';
 import {Observable} from 'rxjs/index';
 import {HttpClient, HttpParams} from '@angular/common/http';
+import {catchError, tap} from "rxjs/internal/operators";
 
 @Injectable()
 export class SqlQueryService {
-  private clausesUrl = 'http://localhost:8222';  // URL to web api
+  private sqlDataUrl = 'http://localhost:8222';  // URL to web api
   constructor(private http: HttpClient) {
   }
 
@@ -20,15 +21,15 @@ export class SqlQueryService {
       );
   }
 
-  getDivTypes(objName, filter = '', sortOrder = 'asc',
-              pageNumber = 0, pageSize = 3): Observable<[]> {
-    return this.http.get(this.clausesUrl + '/dict/sql/div-type', {
+  getObjDataSql(objName, filter = '', sortOrder = 'asc', pageNumber = 0, pageSize = 3, fields ): Observable<[]> {
+    return this.http.get(this.sqlDataUrl + '/dict/sql/div-type',  {
       params: new HttpParams()
         .set('objName', objName)
         .set('filter', filter)
         .set('sortOrder', sortOrder)
         .set('pageNumber', pageNumber.toString())
         .set('pageSize', pageSize.toString())
+        .set('fields', fields)
     }).pipe(
       map(res => res["data"]
       )
@@ -36,6 +37,25 @@ export class SqlQueryService {
     );
   }
 
+  /** POST: add a new data to the server */
+  addObjDataSql(dataObj, data): Observable<{}> {
+// console.log('ObjDataSql.service.addData: ' + JSON.stringify(data));
+    return this.http.put(this.sqlDataUrl + '/dict/sql/div-type', {data: data, dataObj: dataObj} )
+      .pipe(
+        map(res => res)
+        // tap(result => console.log('Sql-query.service.addObjDataSql result ->' + JSON.stringify(result))
+      );
+  }
+
+  /** POST: add a new data to the server */
+  editObjDataSql(dataObj, data): Observable<{}> {
+    console.log('ObjDataSql.service.editData: ' + JSON.stringify(data));
+    return this.http.post(this.sqlDataUrl + '/dict/sql/div-type', {data: data, dataObj: dataObj} )
+      .pipe(
+        map(res => res)
+        // tap(result => console.log('Sql-query.service.addObjDataSql result ->' + JSON.stringify(result))
+      );
+  }
 
   private extractData(res: Response) {
     const body = res.json();

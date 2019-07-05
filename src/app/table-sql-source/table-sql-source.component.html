@@ -32,7 +32,7 @@
     <ng-container *ngFor="let col of cells"  [matColumnDef]="col.name">
 
       <!--<mat-header-cell #thenBlock *matHeaderCellDef mat-sort-header> {{col.label}} </mat-header-cell>-->
-
+      <!--header-->
       <mat-header-cell *matHeaderCellDef mat-sort-header [disabled]="isSortingDisabled(col.name)">
         <!--simple header-->
         <div *ngIf="!col.filterData && !(col.label == 'actionsColumn')">
@@ -78,7 +78,7 @@
 
         <!--editable header-->
         <div *ngIf="col.label == 'actionsColumn' ">
-          <button mat-icon-button color="accent" (click)="dataSource.createNew()">
+          <button mat-icon-button color="accent" (click)="openAddDialog()">
             <mat-icon>add</mat-icon>
           </button>
         </div>
@@ -89,7 +89,7 @@
 
       <div *ngIf="col.label == 'actionsColumn' ">
         <mat-cell *matCellDef="let row">
-          <button *ngIf="!row.editing" mat-icon-button color="primary" focusable="false" (click)="row.startEdit()">
+          <button *ngIf="!row.editing" mat-icon-button color="primary" focusable="false" (click)="openEditDialog(row)">
             <mat-icon>edit</mat-icon>
           </button>
           <button *ngIf="row.editing" mat-icon-button color="primary" focusable="false" (click)="row.confirmEditCreate()">

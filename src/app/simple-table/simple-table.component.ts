@@ -31,8 +31,8 @@ const conf = {
 export class SimpleTableComponent implements OnInit, AfterViewInit  {
   @Input() parentSettings;
   @Input() state;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
   dataSource = new MatTableDataSource<any>();
 
   selection: SelectionModel<any>;

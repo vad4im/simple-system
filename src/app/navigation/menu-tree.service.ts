@@ -10,7 +10,8 @@ export class MenuTreeService {
     'about': 'about',
     'course': 'course',
     'Angular4CRUD': 'person-list',
-    'generalized-table': 'generalized-table',
+    'TableSqlSourceComponent': 'TableSqlSourceComponent',
+    'SqlCrud': 'SqlCrud',
     'Dictionary': {
       'sql': {
         'div-type': 'dictionary/sql/div-type',

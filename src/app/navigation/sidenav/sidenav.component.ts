@@ -10,7 +10,7 @@ import {MatSidenav} from '@angular/material';
 export class SidenavComponent implements OnInit {
   opened: boolean;
   shouldRun = true;
-  @ViewChild('sidenavLeft') sidenavLeft: MatSidenav;
+  @ViewChild('sidenavLeft', {static: false}) sidenavLeft: MatSidenav;
 
   constructor(public layoutService: LayoutService) {
     this.layoutService.toggleSidenavLeft.subscribe(() => {

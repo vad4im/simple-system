@@ -11,9 +11,9 @@ import {fromEvent, merge} from 'rxjs/index';
 export class ShTableComponent implements OnInit, AfterViewInit  {
   @Input() parentSettings;
   @Input() state;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
-  @ViewChild('input') input: ElementRef;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
+  @ViewChild('input', {static: false}) input: ElementRef;
 
   @Output()choiseRequest = new EventEmitter<any>();
 

@@ -23,7 +23,7 @@ export class ServerErrorInterceptor implements HttpInterceptor {
 //         }),
 
         catchError((error: HttpErrorResponse) => {
-          console.log('catchError.error.status->' + error.status);
+          console.log('server-error-interceptor.catchError.error.status->' + JSON.stringify(error));
           if (error.status === 401) {
             // refresh token
           } else {

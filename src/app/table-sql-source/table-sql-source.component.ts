@@ -1,13 +1,14 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {DivType} from '../div-type/div-type';
-import {MatPaginator, MatSort, MatTableDataSource} from '@angular/material';
+import {MatDialog, MatPaginator, MatSort, MatTableDataSource} from '@angular/material';
 import {ActivatedRoute} from '@angular/router';
 import {fromEvent, merge} from 'rxjs/index';
 import {debounceTime, distinctUntilChanged, tap} from 'rxjs/internal/operators';
 import {Cell} from '../mat-table-cells/cell';
 import {ErrorDialogService} from '../core/error-handle/error-dialog/errordialog.service';
-import {SqlQueryService} from '../core/db-query/sql-query.service';
-import {SqlQueryDataSource} from '../core/db-query/sql-query.datasource';
+import {SqlQueryService} from './sql-query.service';
+import {SqlQueryDataSource} from './sql-query.datasource';
+import {TableEditDialogComponent} from "./dialog/table-edit-dialog/table-edit-dialog.component";
+
 
 @Component({
   selector: 'app-table-sql-source',
@@ -16,36 +17,47 @@ import {SqlQueryDataSource} from '../core/db-query/sql-query.datasource';
 })
 export class TableSqlSourceComponent implements OnInit, AfterViewInit {
 
-  divType: DivType;
-
   dataSource: SqlQueryDataSource;
   public filter: any;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-
-  @ViewChild(MatSort) sort: MatSort;
-
-  @ViewChild('input') input: ElementRef;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
+  @ViewChild('input', {static: false}) input: ElementRef;
 
   public fp = new MatTableDataSource;
   public paginatorDisable = false;  //???????
   public dataEditable = true;
-  public displayedColumns: string[] = ['ID', 'CODE', 'NAME'];
-  public clls = [{name: 'ID', label: 'ID', sorting: null, filteringType: null},
-    {name: 'CODE', label: 'CODE', sorting: 'desc', filteringType: null},
-    {name: 'NAME', label: 'NAME', sorting: 'asc', filteringType: 'string'}]
-
+  public displayedColumns: string[] = ['id', 'code', 'name'];
+  public clls = {
+    'id': {label: 'id', sorting: false, filtering: false},
+    'code': {label: 'code', sorting: true, filtering: false},
+    'name': {label: 'name', sorting: true, filtering: true}
+  };
+  public fields = {
+    'id': {desc: '', datatype: 'number', dataLength: 10, dataPrecision: 10, dataScale: 0, dataDefault: null},
+    'code': {desc: '', datatype: 'string', dataLength: 30, dataPrecision: null, dataScale: null, dataDefault: null},
+    'name': {desc: '', datatype: 'string', dataLength: 60, dataPrecision: null, dataScale: null, dataDefault: null}
+  };
+  public fieldsList = '';
+  public dataObject = {name: 'divisionType', primaryKey:['id'], seqName:null};
   public cells: Cell[] = [];
 
   constructor(private route: ActivatedRoute,
               private sqlQueryService: SqlQueryService,
+              public dialog: MatDialog,
               public errorDialogService: ErrorDialogService) {
   }
 
   ngOnInit() {
-    if (this.dataEditable){this.displayedColumns.push('actionsColumn'); };
+    if (this.dataEditable) {
+      this.displayedColumns.push('actionsColumn');
+    }
+    for (var key in this.fields){
+      this.fieldsList += ',' + key ;
+    }
+    this.fieldsList =   this.fieldsList.substring(1);
     this.dataSource = new SqlQueryDataSource(this.sqlQueryService, this.errorDialogService);
-    this.dataSource.getDivType('divisionType', '', 'asc', 1, 3);
+    this.dataSource.getObjDataSql(this.dataObject.name, '', 'asc', 1, 3, this.fieldsList);
     this.buildFilterSruct();
 
     // fp
@@ -76,14 +88,14 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
         distinctUntilChanged(),
         tap(() => {
           this.paginator.pageIndex = 0;
-          this.loadDivTypePage();
+          this.loadObjDataSqlPage();
         })
       )
       .subscribe();
     merge(this.sort.sortChange, this.paginator.page)
       .pipe(
         tap(() => {
-          this.loadDivTypePage();
+          this.loadObjDataSqlPage();
         })
       )
       .subscribe();
@@ -98,9 +110,8 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
         console.log(' applyFilter() !!!' + this.filter);
       }
     }
-    this.loadDivTypePage();
+    this.loadObjDataSqlPage();
   }
-
   clearFilterColumn(columnKey: string): void {
     for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].name == columnKey) {
@@ -110,7 +121,6 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     this.filter = null;
     this.applyFilter();
   }
-
   public isSortingDisabled(columnText: string): boolean {
     for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].name == columnText) {
@@ -119,30 +129,100 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     }
     return true;
   }
-
-
   buildFilterSruct() {
     for (let i = 0; i < this.displayedColumns.length; i++) {
-      let currclls = {name: this.displayedColumns[i], label: this.displayedColumns[i], sorting: null, filteringType: null};
-      for (let j = 0; j < this.clls.length; j++) {
-        if (this.clls[j].name === this.displayedColumns[i]) {
-          currclls.sorting =  this.clls[j].sorting
-          currclls.filteringType = this.clls[j].filteringType
-        }
+      let currclls = {
+        name: this.displayedColumns[i],
+        label: this.displayedColumns[i],
+        sorting: null,
+        filteringType: null
+      };
+      if (this.fields[this.displayedColumns[i]]) {
+        currclls.filteringType = this.fields[this.displayedColumns[i]].datatype;
       }
-      console.log('currclls --->' + JSON.stringify(currclls))
+      if (this.clls[this.displayedColumns[i]]) {
+        currclls.sorting = this.clls[this.displayedColumns[i]].sorting
+      }
       this.cells.push(new Cell(currclls.name, currclls.label, currclls.sorting, currclls.filteringType));
     }
   }
 
-  loadDivTypePage() {
-// console.log('loadDivTypePage() ->');
-    this.dataSource.getDivType(
-      'divisionType',
+  loadObjDataSqlPage() {
+// console.log('loadObjDataSqlPage() ->');
+    this.dataSource.getObjDataSql(
+      this.dataObject.name,
       this.filter,
       this.sort.direction,
       this.paginator.pageIndex,
-      this.paginator.pageSize);
+      this.paginator.pageSize,
+      this.fieldsList);
   }
+
+  addObjDataSql(data){
+    this.dataSource.addObjDataSql(
+      this.dataObject,
+      data
+    );
+  }
+  editObjDataSql(data){
+    this.dataSource.editObjDataSql(
+      this.dataObject,
+      data
+    );
+  }
+
+
+  openAddDialog() {
+    const dialogRef = this.dialog.open(TableEditDialogComponent
+      , {data: {"value": {"id": "82", "code": "new_code", "name": "new name"}, "config": this.fields}});
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+// console.log('TableSqlSource.component.openAddListDialog.result -> ' + JSON.stringify(result));
+        this.addObjDataSql(result.sqlObj);
+        // --After dialog is closed we're doing frontend updates
+        // --For add we're just pushing a new row inside DataService
+        // this.exampleDatabase.dataChange.value.push(this.dataService.getDialogData());
+        // this.refreshTable();
+      }
+    });
+  }
+
+
+  openEditDialog(row){
+    console.log('table-sql-route.component.openEditDialog rowData'+ JSON.stringify(row));
+    // row.NAME = '!!!!!!!!!!!';
+    const dialogRef = this.dialog.open(TableEditDialogComponent
+      , {data: {"value": row, "config": this.fields}});
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+// console.log('TableSqlSource.component.openAddListDialog.result -> ' + JSON.stringify(result));
+         this.editObjDataSql(result.sqlObj);
+        // --After dialog is closed we're doing frontend updates
+        // --For add we're just pushing a new row inside DataService
+        // this.exampleDatabase.dataChange.value.push(this.dataService.getDialogData());
+        // this.refreshTable();
+      }
+    });
+
+  }
+
+  // openAddListDialog1(): void {
+  //   const dialogRef = this.dialog.open(NgDynamicFormComponent, {
+  //     width: '1000px',
+  //     data: null
+  //   });
+  //   dialogRef.afterClosed().subscribe(result => {
+  //     if (result){
+  //       console.log(JSON.stringify(result));
+  // --const clausesList = [{orig: 'word1', transl: 'слово1'}, {orig: 'word2', transl: 'слово2'}];
+  // this.addClausesList(result.value)
+  //   .subscribe(data => {
+  //       this.getClauses();
+  //
+  //     }
+  //   );
+  //     }
+  //  });
+  // }
 
 }
