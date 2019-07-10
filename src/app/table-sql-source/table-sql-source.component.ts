@@ -7,7 +7,7 @@ import {Cell} from '../mat-table-cells/cell';
 import {ErrorDialogService} from '../core/error-handle/error-dialog/errordialog.service';
 import {SqlQueryService} from './sql-query.service';
 import {SqlQueryDataSource} from './sql-query.datasource';
-import {TableEditDialogComponent} from "./dialog/table-edit-dialog/table-edit-dialog.component";
+import {TableEditDialogComponent} from './dialog/table-edit-dialog/table-edit-dialog.component';
 
 
 @Component({
@@ -34,12 +34,14 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     'name': {label: 'name', sorting: true, filtering: true}
   };
   public fields = {
-    'id': {desc: '', datatype: 'number', dataLength: 10, dataPrecision: 10, dataScale: 0, dataDefault: null},
-    'code': {desc: '', datatype: 'string', dataLength: 30, dataPrecision: null, dataScale: null, dataDefault: null},
-    'name': {desc: '', datatype: 'string', dataLength: 60, dataPrecision: null, dataScale: null, dataDefault: null}
+    id:   {desc: '', datatype: 'number', dataLength: 10, dataPrecision: 10, dataScale: 0, dataDefault: null},
+    code: {desc: '', datatype: 'string', dataLength: 30, dataPrecision: null, dataScale: null, dataDefault: null},
+    name: {desc: '', datatype: 'string', dataLength: 60, dataPrecision: null, dataScale: null, dataDefault: null}
   };
-  public fieldsList = '';
-  public dataObject = {name: 'divisionType', primaryKey:['id'], seqName:null};
+  // public fieldsList = 'id,code,name';
+  // public dataObject = {name: 'division_Type', primaryKey: ['id'], seqName: null};
+
+  public tableName = 'division_Type';
   public cells: Cell[] = [];
 
   constructor(private route: ActivatedRoute,
@@ -52,13 +54,10 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     if (this.dataEditable) {
       this.displayedColumns.push('actionsColumn');
     }
-    for (var key in this.fields){
-      this.fieldsList += ',' + key ;
-    }
-    this.fieldsList =   this.fieldsList.substring(1);
     this.dataSource = new SqlQueryDataSource(this.sqlQueryService, this.errorDialogService);
-    this.dataSource.getObjDataSql(this.dataObject.name, '', 'asc', 1, 3, this.fieldsList);
     this.buildFilterSruct();
+
+    this.dataSource.getConfig(this.tableName);
 
     // fp
     // this.fp.filterPredicate = (p: DivType, filtre: any) => {
@@ -112,6 +111,7 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     }
     this.loadObjDataSqlPage();
   }
+
   clearFilterColumn(columnKey: string): void {
     for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].name == columnKey) {
@@ -121,6 +121,7 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     this.filter = null;
     this.applyFilter();
   }
+
   public isSortingDisabled(columnText: string): boolean {
     for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].name == columnText) {
@@ -129,6 +130,15 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     }
     return true;
   }
+
+  getSortCond(): string {
+    if (!this.sort.active || this.sort.direction === '') {
+      return '';
+    }
+    return ((this.sort.direction === 'asc') ? '-' : '+' ) + this.sort.active;
+  }
+
+
   buildFilterSruct() {
     for (let i = 0; i < this.displayedColumns.length; i++) {
       let currclls = {
@@ -148,33 +158,32 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
   }
 
   loadObjDataSqlPage() {
-// console.log('loadObjDataSqlPage() ->');
     this.dataSource.getObjDataSql(
-      this.dataObject.name,
       this.filter,
-      this.sort.direction,
+      this.getSortCond(),
       this.paginator.pageIndex,
-      this.paginator.pageSize,
-      this.fieldsList);
+      this.paginator.pageSize);
   }
 
-  addObjDataSql(data){
+  addObjDataSql(data) {
     this.dataSource.addObjDataSql(
-      this.dataObject,
-      data
-    );
-  }
-  editObjDataSql(data){
-    this.dataSource.editObjDataSql(
-      this.dataObject,
       data
     );
   }
 
+  editObjDataSql(data) {
+    this.dataSource.editObjDataSql(
+      data
+    );
+  }
+
+  delObjDataSql( rowId) {
+    this.dataSource.delObjDataSql(rowId);
+  }
 
   openAddDialog() {
     const dialogRef = this.dialog.open(TableEditDialogComponent
-      , {data: {"value": {"id": "82", "code": "new_code", "name": "new name"}, "config": this.fields}});
+      , {data: {"value": {"id": "82", "code": "new_code", "name": "new name"}, "config": this.dataSource.rowsConfig.fields}});
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
 // console.log('TableSqlSource.component.openAddListDialog.result -> ' + JSON.stringify(result));
@@ -188,15 +197,15 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
   }
 
 
-  openEditDialog(row){
-    console.log('table-sql-route.component.openEditDialog rowData'+ JSON.stringify(row));
+  openEditDialog(row) {
+    console.log('table-sql-route.component.openEditDialog rowData' + JSON.stringify(row));
     // row.NAME = '!!!!!!!!!!!';
     const dialogRef = this.dialog.open(TableEditDialogComponent
-      , {data: {"value": row, "config": this.fields}});
+      , {data: {"value": row, "config": this.dataSource.rowsConfig.fields}});
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
 // console.log('TableSqlSource.component.openAddListDialog.result -> ' + JSON.stringify(result));
-         this.editObjDataSql(result.sqlObj);
+        this.editObjDataSql(result.sqlObj);
         // --After dialog is closed we're doing frontend updates
         // --For add we're just pushing a new row inside DataService
         // this.exampleDatabase.dataChange.value.push(this.dataService.getDialogData());
@@ -205,6 +214,25 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     });
 
   }
+
+  openDeleteDialog(row) {
+    console.log('table-sql-route.component.openDeleteDialog rowData' + JSON.stringify(row));
+    // row.NAME = '!!!!!!!!!!!';
+    const dialogRef = this.dialog.open(TableEditDialogComponent
+      , {data: {"value": row, "config": this.dataSource.rowsConfig.fields}});
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+// console.log('TableSqlSource.component.openAddListDialog.result -> ' + JSON.stringify(result));
+        this.delObjDataSql( row.id);
+        // --After dialog is closed we're doing frontend updates
+        // --For add we're just pushing a new row inside DataService
+        // this.exampleDatabase.dataChange.value.push(this.dataService.getDialogData());
+        // this.refreshTable();
+      }
+    });
+
+  }
+
 
   // openAddListDialog1(): void {
   //   const dialogRef = this.dialog.open(NgDynamicFormComponent, {

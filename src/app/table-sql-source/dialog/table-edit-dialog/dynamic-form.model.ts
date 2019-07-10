@@ -7,7 +7,7 @@ import {
 
 export function getDynFormModel(data: any) {
   let group = [];
-console.log('dynamic.form.model in data->' + JSON.stringify(data));
+// console.log('dynamic.form.model in data->' + JSON.stringify(data));
   for (var key in data.value) {
     group.push(
       new DynamicInputModel({

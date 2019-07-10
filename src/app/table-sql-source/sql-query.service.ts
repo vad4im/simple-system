@@ -7,6 +7,10 @@ import {catchError, tap} from "rxjs/internal/operators";
 @Injectable()
 export class SqlQueryService {
   private sqlDataUrl = 'http://localhost:8222';  // URL to web api
+  private dmlPath = '/dict/sql/dml';
+  private confPath = '/dict/sql/dml/conf';
+  private objDescPath = '/dict/sql/dml/obj-desc';
+
   constructor(private http: HttpClient) {
   }
 
@@ -21,8 +25,29 @@ export class SqlQueryService {
       );
   }
 
-  getObjDataSql(objName, filter = '', sortOrder = 'asc', pageNumber = 0, pageSize = 3, fields ): Observable<[]> {
-    return this.http.get(this.sqlDataUrl + '/dict/sql/div-type',  {
+  getConfDataSql(objName): Observable<[]> {
+    return this.http.get(this.sqlDataUrl + this.confPath,  {
+      params: new HttpParams()
+        .set('objName', objName)
+    }).pipe(
+      map(res => res['data']['rows']
+      )
+      // map(res => console.log(res))
+    );
+  }
+  getObjDescSql(objName): Observable<[]> {
+    return this.http.get(this.sqlDataUrl + this.objDescPath,  {
+      params: new HttpParams()
+        .set('objName', objName)
+    }).pipe(
+      map(res => res['data']['rows']
+      )
+      // map(res => console.log(res))
+    );
+  }
+
+  getObjDataSql(objName, filter = '', sortOrder = '', pageNumber = 0, pageSize = 3, fields ): Observable<[]> {
+    return this.http.get(this.sqlDataUrl + this.dmlPath,  {
       params: new HttpParams()
         .set('objName', objName)
         .set('filter', filter)
@@ -31,16 +56,16 @@ export class SqlQueryService {
         .set('pageSize', pageSize.toString())
         .set('fields', fields)
     }).pipe(
-      map(res => res["data"]
+      map(res => res['data']['rows']
       )
-      // map(res => console.log(res))
+       // map(res => console.log(res))
     );
   }
 
-  /** POST: add a new data to the server */
+  /** PUT: add a new data to the server */
   addObjDataSql(dataObj, data): Observable<{}> {
-// console.log('ObjDataSql.service.addData: ' + JSON.stringify(data));
-    return this.http.put(this.sqlDataUrl + '/dict/sql/div-type', {data: data, dataObj: dataObj} )
+// console.log('ObjDataSql.service.addObjDataSql: ' + JSON.stringify(data));
+    return this.http.put(this.sqlDataUrl + this.dmlPath, {data: data, dataObj: dataObj} )
       .pipe(
         map(res => res)
         // tap(result => console.log('Sql-query.service.addObjDataSql result ->' + JSON.stringify(result))
@@ -49,9 +74,22 @@ export class SqlQueryService {
 
   /** POST: add a new data to the server */
   editObjDataSql(dataObj, data): Observable<{}> {
-    console.log('ObjDataSql.service.editData: ' + JSON.stringify(data));
-    return this.http.post(this.sqlDataUrl + '/dict/sql/div-type', {data: data, dataObj: dataObj} )
+    // console.log('ObjDataSql.service.editObjDataSql: ' + JSON.stringify(data));
+    return this.http.post(this.sqlDataUrl + this.dmlPath, {data: data, dataObj: dataObj} )
       .pipe(
+        map(res => res)
+        // tap(result => console.log('Sql-query.service.addObjDataSql result ->' + JSON.stringify(result))
+      );
+  }
+
+  /** DELETE: add a new data to the server */
+  delObjDataSql(objName, prKey, id ): Observable<{}> {
+    console.log('ObjDataSql.service.delObjDataSql: ' + JSON.stringify(objName));
+    return this.http.delete(this.sqlDataUrl + this.dmlPath +`/${id}`,{
+      params: new HttpParams()
+      .set('objName', objName)
+      .set('prKey', prKey)
+  } ).pipe(
         map(res => res)
         // tap(result => console.log('Sql-query.service.addObjDataSql result ->' + JSON.stringify(result))
       );

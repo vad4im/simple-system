@@ -1,12 +1,14 @@
 <div class="div-type">
-
   <mat-form-field>
     <input matInput placeholder="Search div type" #input>
   </mat-form-field>
 
+
   <div class="spinner-container" *ngIf="dataSource.loading$ | async">
     <mat-spinner></mat-spinner>
   </div>
+
+
   <!--matSortActive="ID" matSortDirection="asc"-->
   <mat-table class="lessons-table mat-elevation-z8" [dataSource]="dataSource"
              matSort matSortDisableClear>
@@ -95,7 +97,7 @@
           <button *ngIf="row.editing" mat-icon-button color="primary" focusable="false" (click)="row.confirmEditCreate()">
             <mat-icon>check</mat-icon>
           </button>
-          <button mat-icon-button color="primary" focusable="false" (click)="row.cancelOrDelete()">
+          <button mat-icon-button color="primary" focusable="false" (click)="openDeleteDialog(row)">
             <i class="fa fa-times mat-icon"></i>
             <mat-icon>delete</mat-icon>
           </button>
