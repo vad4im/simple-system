@@ -9,29 +9,26 @@
 </ng-template>
 <!---->
 <ng-template #dataTempl>
+<div class="div-type">
+  <mat-form-field>
+    <input matInput placeholder="Search div type" #input>
+  </mat-form-field>
 
+  <div class="spinner-container" *ngIf="dataSource.loadingSubject$ | async">
+    <mat-spinner></mat-spinner>
+  </div>
 
-
-  <div class="div-type">
-    <mat-form-field>
-      <input matInput placeholder="Search div type" #input>
-    </mat-form-field>
-
-    <div class="spinner-container" *ngIf="dataSource.loadingSubject$ | async">
-      <mat-spinner></mat-spinner>
-    </div>
-
-    <!--matSortActive="ID" matSortDirection="asc"-->
-    <mat-table class="lessons-table mat-elevation-z8" [dataSource]="dataSource"
-               matSort matSortDisableClear>
+  <!--matSortActive="ID" matSortDirection="asc"-->
+  <mat-table class="lessons-table mat-elevation-z8" [dataSource]="dataSource"
+             matSort matSortDisableClear>
 
       <!--for coll of cells-->
-      <ng-container *ngFor="let col of cells" [matColumnDef]="col.name">
+      <ng-container *ngFor="let col of dataSource.cells" [matColumnDef]="col.name">
 
         <!--<mat-header-cell #thenBlock *matHeaderCellDef mat-sort-header> {{col.label}} </mat-header-cell>-->
 
         <!--header-->
-        <mat-header-cell *matHeaderCellDef mat-sort-header [disabled]="isSortingDisabled(col.name)">
+        <mat-header-cell *matHeaderCellDef mat-sort-header [disabled]="!col.isSorting">
           <!--simple header-->
           <div *ngIf="!(col.filterType)">
             {{col.label}}
@@ -112,12 +109,11 @@
 
       </ng-container>
 
+    <mat-header-row *matHeaderRowDef="getDisplCols()"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: getDisplCols()"></mat-row>
+  </mat-table>
 
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-    </mat-table>
-
-    <mat-paginator [length]="9" [pageSize]="3"
-                   [pageSizeOptions]="[3, 5, 10]"></mat-paginator>
-  </div>
+  <mat-paginator [length]="9" [pageSize]="3"
+                 [pageSizeOptions]="[3, 5, 10]"></mat-paginator>
+</div>
 </ng-template>

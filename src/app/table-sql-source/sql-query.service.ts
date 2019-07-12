@@ -3,13 +3,14 @@ import {map} from 'rxjs/operators';
 import {Observable} from 'rxjs/index';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {catchError, tap} from "rxjs/internal/operators";
+import {getIifeBody} from "@angular/compiler-cli/ngcc/src/host/esm5_host";
 
 @Injectable()
 export class SqlQueryService {
   private sqlDataUrl = 'http://localhost:8222';  // URL to web api
-  private dmlPath = '/dict/sql/dml';
-  private confPath = '/dict/sql/dml/conf';
-  private objDescPath = '/dict/sql/dml/obj-desc';
+  private dmlPath = '/simple-system/dml';
+  private confPath = '/simple-system/dml/conf';
+  private objDescPath = '/simple-system/dml/obj-desc';
 
   constructor(private http: HttpClient) {
   }
@@ -47,7 +48,8 @@ export class SqlQueryService {
   }
 
   getObjDataSql(objName, filter = '', sortOrder = '', pageNumber = 0, pageSize = 3, fields ): Observable<[]> {
-    return this.http.get(this.sqlDataUrl + this.dmlPath,  {
+// console.log('sql-query.service.getObjDataSql  filter->' + filter);
+    return this.http.get(this.sqlDataUrl + this.dmlPath,   {
       params: new HttpParams()
         .set('objName', objName)
         .set('filter', filter)
@@ -55,10 +57,28 @@ export class SqlQueryService {
         .set('pageNumber', pageNumber.toString())
         .set('pageSize', pageSize.toString())
         .set('fields', fields)
-    }).pipe(
+    }
+    ).pipe(
       map(res => res['data']['rows']
       )
        // map(res => console.log(res))
+    );
+  }
+
+  getObjDataSqlAsPut(objName, filter = [], sortOrder = '', pageNumber = 0, pageSize = 3, fields ): Observable<[]> {
+// console.log('sql-query.service.getObjDataSql  filter->' + filter);
+    return this.http.put(this.sqlDataUrl + this.dmlPath + '/get',   {
+      pageSize: pageSize.toString(),
+      pageNumber: pageNumber.toString(),
+      sortOrder: sortOrder,
+      fields: fields,
+      objName: objName,
+      filter: filter
+      }
+    ).pipe(
+      map(res => res['data']['rows']
+      )
+      // map(res => console.log(res))
     );
   }
 

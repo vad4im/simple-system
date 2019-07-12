@@ -8,40 +8,41 @@ import {ErrorDialogService} from '../core/error-handle/error-dialog/errordialog.
 import {SqlQueryService} from './sql-query.service';
 import {SqlQueryDataSource} from './sql-query.datasource';
 import {TableEditDialogComponent} from './dialog/table-edit-dialog/table-edit-dialog.component';
+import {isUndefined} from 'util';
 
 
 @Component({
   selector: 'app-table-sql-source',
-  templateUrl: './table-sql-source.component.html',
+  templateUrl: './table-sql-source.component2.html',
   styleUrls: ['./table-sql-source.component.css']
 })
 export class TableSqlSourceComponent implements OnInit, AfterViewInit {
 
+  public initialized = false;
   dataSource: SqlQueryDataSource;
   public filter: any;
-
   @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
   @ViewChild(MatSort, {static: false}) sort: MatSort;
   @ViewChild('input', {static: false}) input: ElementRef;
 
   public fp = new MatTableDataSource;
-  public paginatorDisable = false;  //???????
+
+  public paginatorDisable = false;  // ???????
   public dataEditable = true;
   public displayedColumns: string[] = ['id', 'code', 'name'];
   public clls = {
-    'id': {label: 'id', sorting: false, filtering: false},
-    'code': {label: 'code', sorting: true, filtering: false},
-    'name': {label: 'name', sorting: true, filtering: true}
+    id: {label: 'id', sorting: true, filtering: false},
+    code: {label: 'code', sorting: false, filtering: true},
+    name: {label: 'name', sorting: false, filtering: false}
   };
   public fields = {
-    id:   {desc: '', datatype: 'number', dataLength: 10, dataPrecision: 10, dataScale: 0, dataDefault: null},
-    code: {desc: '', datatype: 'string', dataLength: 30, dataPrecision: null, dataScale: null, dataDefault: null},
-    name: {desc: '', datatype: 'string', dataLength: 60, dataPrecision: null, dataScale: null, dataDefault: null}
+    id: {desc: '', datatype: 'number', dataLength: 10, dataPrecision: 10, dataScale: 0, dataDefault: null},
+    code: {desc: '', datatype: 'varchar2', dataLength: 30, dataPrecision: null, dataScale: null, dataDefault: null},
+    name: {desc: '', datatype: 'varchar2', dataLength: 60, dataPrecision: null, dataScale: null, dataDefault: null}
   };
+  public tableName = 'division_Type';
   // public fieldsList = 'id,code,name';
   // public dataObject = {name: 'division_Type', primaryKey: ['id'], seqName: null};
-
-  public tableName = 'division_Type';
   public cells: Cell[] = [];
 
   constructor(private route: ActivatedRoute,
@@ -51,13 +52,32 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    if (this.dataEditable) {
-      this.displayedColumns.push('actionsColumn');
-    }
     this.dataSource = new SqlQueryDataSource(this.sqlQueryService, this.errorDialogService);
+    if (this.dataEditable) { this.addDisplCols('actionsColumn'); };
     this.buildFilterSruct();
+    // console.log('table-sql-source,component this.cells ->' + JSON.stringify(this.cells));
+    this.dataSource.getConfig(this.tableName, this.getDisplCols(), this.clls);
 
-    this.dataSource.getConfig(this.tableName);
+    this.dataSource.loadingSubject
+      .subscribe(value => {
+        // console.log('table-sql-source,component  ngOnInit value:' + value + ' this.dataSource.loadingConfig.value:' + this.dataSource.loadingConfig.value + ' this.initialized:' + this.initialized);
+        if (!this.dataSource.loadingConfig.value) {
+          if (!value && !this.initialized) {
+            //  подписаться
+            this.initialized = true;
+            // console.log('table-sql-source,component ngOnInit loadingConfig.subscribe  this.sort->' + this.sort);
+            this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
+            merge(this.sort.sortChange, this.paginator.page)
+              .pipe(
+                tap(() => {
+                  // console.log('table-sql-source,component  ngOnInit merge !!!');
+                  this.loadObjDataSqlPage();
+                })
+              )
+              .subscribe();
+          }
+        }
+      });
 
     // fp
     // this.fp.filterPredicate = (p: DivType, filtre: any) => {
@@ -79,39 +99,57 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    console.log('ngAfterViewInit() ->');
-    this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
-    fromEvent(this.input.nativeElement, 'keyup')
-      .pipe(
-        debounceTime(150),
-        distinctUntilChanged(),
-        tap(() => {
-          this.paginator.pageIndex = 0;
-          this.loadObjDataSqlPage();
-        })
-      )
-      .subscribe();
-    merge(this.sort.sortChange, this.paginator.page)
-      .pipe(
-        tap(() => {
-          this.loadObjDataSqlPage();
-        })
-      )
-      .subscribe();
-
+    // console.log('ngAfterViewInit() ->');
+    // this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
+    // fromEvent(this.input.nativeElement, 'keyup')
+    //   .pipe(
+    //     debounceTime(150),
+    //     distinctUntilChanged(),
+    //     tap(() => {
+    //       console.log('table-sql-source,component  ngAfterViewInit fromEvent !!!');
+    //       this.paginator.pageIndex = 0;
+    //       this.loadObjDataSqlPage();
+    //     })
+    //   )
+    //   .subscribe();
+    // merge(this.sort.sortChange, this.paginator.page)
+    //   .pipe(
+    //     tap(() => {
+    //       console.log('table-sql-source,component  ngAfterViewInit merge !!!');
+    //       this.loadObjDataSqlPage();
+    //     })
+    //   )
+    //   .subscribe();
   }
 
+  getDisplCols(){
+    return this.displayedColumns;
+  }
+  addDisplCols(value: string){
+  this.displayedColumns.push(value);
+  }
 
+  // filters
+  // call from html
   applyFilter() {
+// console.log('table-sql-source,component applyFilter() ');
     for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].filterData) {
         this.filter = this.cells[i].getCellFilter();
-        console.log(' applyFilter() !!!' + this.filter);
+// console.log(' applyFilter() this.cells[i]->' + JSON.stringify(this.cells[i].name) + 'this.filter->' + this.filter);
       }
     }
+// this.filter =  this.dataSource.getFilterFromCells();
+// console.log('table-sql-source,component applyFilter()  this.dataSource.getFilterFromCells()->' + this.dataSource.getFilterFromCells());
+// console.log('table-sql-source,component applyFilter()  this.filter->' + this.filter);
     this.loadObjDataSqlPage();
+// console.log('about cells --------------');
+// console.log('table-sql-source,component applyFilter() this.cells -> ' + JSON.stringify(this.cells));
+// console.log('about cells --------------');
+// console.log('table-sql-source,component applyFilter() this.dataSource.cells -> ' + JSON.stringify(this.dataSource.cells));
   }
 
+  // call from html
   clearFilterColumn(columnKey: string): void {
     for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].name == columnKey) {
@@ -119,16 +157,34 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
       }
     }
     this.filter = null;
+    this.dataSource.clearCellFilterColumns(columnKey);
     this.applyFilter();
   }
 
-  public isSortingDisabled(columnText: string): boolean {
-    for (let i = 0; i < this.cells.length; i++) {
-      if (this.cells[i].name == columnText) {
-        return this.cells[i].isSorting;
+  buildFilterSruct() {
+    // console.log('this.fields  ->' + JSON.stringify(this.fields));
+    // console.log('this.dataSource.rowsConfig.fields  ->' + JSON.stringify(this.dataSource.getFieldsConfig()));
+    for (let i = 0; i < this.getDisplCols().length; i++) {
+      const currclls = {
+        name: this.getDisplCols()[i],
+        label: this.getDisplCols()[i],
+        sorting: null,
+        filtering: null
+      };
+// console.log('table-sql-source.component buildFilterSruct this.getDisplCols()[i] ' + this.getDisplCols()[i]);
+// console.log('table-sql-source.component buildFilterSruct this.fields[this.getDisplCols()[i]] ' + JSON.stringify(this.fields[this.getDisplCols()[i]]));
+      if (this.clls[this.getDisplCols()[i]]) {
+        currclls.sorting = this.clls[this.getDisplCols()[i]].sorting;
+        currclls.filtering = this.clls[this.getDisplCols()[i]].filtering;
       }
+      this.cells.push(new Cell(
+        currclls.name,
+        currclls.label,
+        currclls.sorting,
+        currclls.filtering,
+        this.fields[this.getDisplCols()[i]]
+      ));
     }
-    return true;
   }
 
   getSortCond(): string {
@@ -136,25 +192,6 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
       return '';
     }
     return ((this.sort.direction === 'asc') ? '-' : '+' ) + this.sort.active;
-  }
-
-
-  buildFilterSruct() {
-    for (let i = 0; i < this.displayedColumns.length; i++) {
-      let currclls = {
-        name: this.displayedColumns[i],
-        label: this.displayedColumns[i],
-        sorting: null,
-        filteringType: null
-      };
-      if (this.fields[this.displayedColumns[i]]) {
-        currclls.filteringType = this.fields[this.displayedColumns[i]].datatype;
-      }
-      if (this.clls[this.displayedColumns[i]]) {
-        currclls.sorting = this.clls[this.displayedColumns[i]].sorting
-      }
-      this.cells.push(new Cell(currclls.name, currclls.label, currclls.sorting, currclls.filteringType));
-    }
   }
 
   loadObjDataSqlPage() {
@@ -177,13 +214,18 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     );
   }
 
-  delObjDataSql( rowId) {
+  delObjDataSql(rowId) {
     this.dataSource.delObjDataSql(rowId);
   }
 
   openAddDialog() {
     const dialogRef = this.dialog.open(TableEditDialogComponent
-      , {data: {"value": {"id": "82", "code": "new_code", "name": "new name"}, "config": this.dataSource.rowsConfig.fields}});
+      , {
+        data: {
+          value: {id: '82', code: 'new_code', name: 'new name'},
+          config: this.dataSource.getFieldsConfig()
+        }
+      });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
 // console.log('TableSqlSource.component.openAddListDialog.result -> ' + JSON.stringify(result));
@@ -201,7 +243,7 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     console.log('table-sql-route.component.openEditDialog rowData' + JSON.stringify(row));
     // row.NAME = '!!!!!!!!!!!';
     const dialogRef = this.dialog.open(TableEditDialogComponent
-      , {data: {"value": row, "config": this.dataSource.rowsConfig.fields}});
+      , {data: {value: row, config: this.dataSource.getFieldsConfig()}});
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
 // console.log('TableSqlSource.component.openAddListDialog.result -> ' + JSON.stringify(result));
@@ -219,11 +261,11 @@ export class TableSqlSourceComponent implements OnInit, AfterViewInit {
     console.log('table-sql-route.component.openDeleteDialog rowData' + JSON.stringify(row));
     // row.NAME = '!!!!!!!!!!!';
     const dialogRef = this.dialog.open(TableEditDialogComponent
-      , {data: {"value": row, "config": this.dataSource.rowsConfig.fields}});
+      , {data: {value: row, config: this.dataSource.getFieldsConfig()}});
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
 // console.log('TableSqlSource.component.openAddListDialog.result -> ' + JSON.stringify(result));
-        this.delObjDataSql( row.id);
+        this.delObjDataSql(row.id);
         // --After dialog is closed we're doing frontend updates
         // --For add we're just pushing a new row inside DataService
         // this.exampleDatabase.dataChange.value.push(this.dataService.getDialogData());

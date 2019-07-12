@@ -4,48 +4,35 @@ import {forkJoin} from 'rxjs';
 import {catchError, finalize} from 'rxjs/operators';
 import {ErrorDialogService} from '../core/error-handle/error-dialog/errordialog.service';
 import {SqlQueryService} from './sql-query.service';
+import {Cell} from '../mat-table-cells/cell';
 
 export class SqlQueryDataSource implements DataSource<any> {
 
   public rowsConfig = {};
+  public cells: Cell[] = [];
+  // {fieldList: string   // 'val1,val2,val3'
+  //  fields: flds,       // {name:{desc: '', datatype: 'string', dataLength: 60, dataPrecision: null, dataScale: null, dataDefault: null}}
+  //  dataObject: obj     // {name: 'division_Type', primaryKey: ['id'], seqName: null}
+  // }
+  public loadingConfig = new BehaviorSubject<boolean>(false);
+  public loadingConf$ = this.loadingConfig.asObservable();
+  public loadingSubject = new BehaviorSubject<boolean>(false);
+  public loadingSubject$ = this.loadingSubject.asObservable();
   private rowsSubject = new BehaviorSubject<any[]>([]);
-  private loadingSubject = new BehaviorSubject<boolean>(false);
-  public loading$ = this.loadingSubject.asObservable();
-  private loadingConfig = new BehaviorSubject<boolean>(false);
+
+  // private subscriptions: Subscription[] = [];
+  // on init    this.subscriptions.push(langSub);
+  // ngOnDestroy() {
+  //   this.subscriptions
+  //     .forEach(s => s.unsubscribe());
+  // }
 
   constructor(private sqlQueryService: SqlQueryService, public errorDialogService: ErrorDialogService) {
   }
 
-  getConfig(objName: string) {
-
-    return forkJoin([this.sqlQueryService.getConfDataSql(objName),
-      this.sqlQueryService.getObjDescSql(objName)]
-    ).pipe(
-      catchError(err => {
-          // this.notifier.showError(err.error.errormsg);
-          let data = {};
-          data = {
-            reason: err.error.errormsg,
-            status: err.status
-          };
-          this.errorDialogService.openDialog(data);
-          return of([])
-        }
-      ),
-      finalize(() => this.loadingConfig.next(false))
-    )
-      .subscribe(results => {
-        // results[0] дата из getConfDataSql
-        // results[1] дата из getObjDescSql
-        // this.b = results[0];
-        // this.a = results[1];
-        this.rowsConfig = this.buildConfig(results[0], results[1]);
-        // console.log('getConfig ----1--->' + JSON.stringify(this.rowsConfig));
-        // console.log('JSON.stringify(this.rowsConfig.dataObject) ->>' + JSON.stringify(this.rowsConfig))
-        return this.getObjDataSql('', '', 1, 3)
-      });
+  getFieldsConfig() {
+    return this.rowsConfig.fields;
   }
-
 
   buildConfig(confdata, objData) {
     let fList = '';
@@ -64,13 +51,74 @@ export class SqlQueryDataSource implements DataSource<any> {
       fList += ',' + confdata[i].name;
       flds[confdata[i].name] = confdata[i];
     }
+    // console.log('sql_query.datasource buildConfig fieldList-> ' + fList.substring(1));
+    // console.log('sql_query.datasource buildConfig fields-> ' + JSON.stringify(flds));
+    // console.log('sql_query.datasource buildConfig dataObject-> ' + JSON.stringify(obj));
     return {fieldList: fList.substring(1), fields: flds, dataObject: obj};
   }
 
+  buildCellsSruct(displayedColumns, clls) {
+    // console.log('sql_query.datasource buildCellsSruct this.rowsConfig.fields ->' + JSON.stringify(this.rowsConfig.fields));
+    for (let i = 0; i < displayedColumns.length; i++) {
+      let currclls = {
+        name: displayedColumns[i],
+        label: displayedColumns[i],
+        sorting: null,
+        filtering: null
+      };
+      if (clls[displayedColumns[i]]) {
+        currclls.sorting = clls[displayedColumns[i]].sorting;
+        currclls.filtering = clls[displayedColumns[i]].filtering;
+      }
+      this.cells.push(new Cell(
+        currclls.name,
+        currclls.label,
+        currclls.sorting,
+        currclls.filtering,
+        this.rowsConfig.fields[displayedColumns[i]]));
+    }
+  }
 
-  getObjDataSql(filter: string, sortDirection: string, pageIndex: number, pageSize: number) {
+  clearCellFilterColumns(columnKey: string) {
+    for (let i = 0; i < this.cells.length; i++) {
+      if (this.cells[i].name === columnKey) {
+        this.cells[i].filterData.clearFilter();
+      }
+    }
+  }
+
+  getFilterFromCells(): any {
+    let filterData;
+    for (let i = 0; i < this.cells.length; i++) {
+      if (this.cells[i].filterData) {
+        filterData = this.cells[i].getCellFilter();
+      }
+    }
+    return filterData;
+  }
+
+
+  getConfig(objName: string, displayedColumns, clls) {
+    this.loadingConfig.next(true);
+    forkJoin([this.sqlQueryService.getConfDataSql(objName),
+      this.sqlQueryService.getObjDescSql(objName)])
+      .subscribe(results => {
+          this.rowsConfig = this.buildConfig(results[0], results[1]);
+          this.buildCellsSruct(displayedColumns, clls);
+console.log('sql-query.datasource this.cells ->' + JSON.stringify(this.cells));
+          // console.log('getConfig ----1--->' + JSON.stringify(this.rowsConfig));
+          // console.log('JSON.stringify(this.rowsConfig.dataObject) ->>' + JSON.stringify(this.rowsConfig))
+          this.loadingConfig.next(false);
+          this.getObjDataSql('', '', 0, 3);
+        }
+      )
+  }
+
+  getObjDataSql(filter: [], sortDirection: string, pageIndex: number, pageSize: number) {
+    console.log('sql-query.datasource.getObjDataSql  filter->' + JSON.stringify(this.getFilterFromCells()));
     this.loadingSubject.next(true);
-    this.sqlQueryService.getObjDataSql(this.rowsConfig.dataObject.name, filter, sortDirection, pageIndex, pageSize, this.rowsConfig.fieldList)
+    // this.sqlQueryService.getObjDataSql(this.rowsConfig.dataObject.name, filter, sortDirection, pageIndex, pageSize, this.rowsConfig.fieldList)
+    this.sqlQueryService.getObjDataSqlAsPut(this.rowsConfig.dataObject.name, this.getFilterFromCells(), sortDirection, pageIndex, pageSize, this.rowsConfig.fieldList)
       .pipe(
         catchError(err => {
             // this.notifier.showError(err.error.errormsg);
