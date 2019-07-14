@@ -65,7 +65,7 @@ export class SqlQueryService {
     );
   }
 
-  getObjDataSqlAsPut(objName, filter = [], sortOrder = '', pageNumber = 0, pageSize = 3, fields ): Observable<[]> {
+  getObjDataSqlAsPut(objName, filter, sortOrder = '', pageNumber = 0, pageSize = 3, fields ): Observable<[]> {
 // console.log('sql-query.service.getObjDataSql  filter->' + filter);
     return this.http.put(this.sqlDataUrl + this.dmlPath + '/get',   {
       pageSize: pageSize.toString(),

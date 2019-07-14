@@ -48,6 +48,20 @@ export class Cell {
     return null;
   }
 
+  public getCellFilterJson() {
+    if (this.filterData.cond) {
+      return {
+        cell: this.name,
+        type: this.filterType,
+        op: this.filterData.cond,
+        v1: this.filterData.value1,
+        v2: this.filterData.value2
+      };
+    }
+    return null;
+  }
+
+
 }
 
 // convert oracle datatype

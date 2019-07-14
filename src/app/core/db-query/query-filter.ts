@@ -31,6 +31,7 @@ export class Filter {
   }
 
   clearFilter() {
+console.log('query-filter.clearFilter of ' + this.colName);
     this.value1 = null;
     this.value2 = null;
     this.cond = null;
