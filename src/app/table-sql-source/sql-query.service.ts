@@ -84,7 +84,6 @@ export class SqlQueryService {
 
   /** PUT: add a new data to the server */
   addObjDataSql(dataObj, data): Observable<{}> {
-// console.log('ObjDataSql.service.addObjDataSql: ' + JSON.stringify(data));
     return this.http.put(this.sqlDataUrl + this.dmlPath, {data: data, dataObj: dataObj} )
       .pipe(
         map(res => res)
@@ -94,7 +93,8 @@ export class SqlQueryService {
 
   /** POST: add a new data to the server */
   editObjDataSql(dataObj, data): Observable<{}> {
-    // console.log('ObjDataSql.service.editObjDataSql: ' + JSON.stringify(data));
+console.log('ObjDataSql.service.editObjDataSql  dataObj->: ' + JSON.stringify(dataObj));
+// console.log('ObjDataSql.service.editObjDataSql: ' + JSON.stringify(data));
     return this.http.post(this.sqlDataUrl + this.dmlPath, {data: data, dataObj: dataObj} )
       .pipe(
         map(res => res)

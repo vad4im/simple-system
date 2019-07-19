@@ -8,23 +8,31 @@ import {
 export function getDynFormModel(data: any) {
   let group = [];
 // console.log('dynamic.form.model in data->' + JSON.stringify(data));
-  for (var key in data.value) {
-    group.push(
-      new DynamicInputModel({
-          id: key,
-          inputType: data.config[key].datatype,
-          placeholder: key,
-          value: data.value[key]
-        }
-      )
-    );
+  for (let i = 0; i < data.config.length; i++){
+// console.log('dynamic.form.model convertValue key:' + key + ' value:' + Date(value));
+      group.push(
+        new DynamicInputModel({
+            id: data.config[i].name,
+            inputType: data.config[i].datatype,
+            placeholder: data.config[i].name,
+            value: (data.value) ? convertValue(data.config[i].datatype, data.value[data.config[i].name])  : null
+          }
+        )
+      );
   }
-  ;
   return [new DynamicFormGroupModel({
     id: "sqlObj",
     group: group
   })
   ];
+}
+
+
+function convertValue(key, value){
+  if (key == 'date'){
+    return value ? value.substr(0,10) : null;
+  }
+  return value;
 }
 
 export const GET_DYN_FORM_MODEL = [

@@ -17,3 +17,6 @@
   font-size: 16px;
   flex-grow: 1;
 }
+.div-table {
+   overflow: auto;
+}

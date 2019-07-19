@@ -4,21 +4,9 @@ import {forkJoin} from 'rxjs';
 import {catchError, finalize} from 'rxjs/operators';
 import {ErrorDialogService} from '../core/error-handle/error-dialog/errordialog.service';
 import {SqlQueryService} from './sql-query.service';
-import {Cell} from '../mat-table-cells/cell';
+import {Cell, SourceObjConf, SourceRowConf, ViewCell} from '../mat-table-cells/cell';
 
 export class SqlQueryDataSource implements DataSource<any> {
-
-  public rowsConfig = {};
-  public cells: Cell[] = [];
-  // {fieldList: string   // 'val1,val2,val3'
-  //  fields: flds,       // {name:{desc: '', datatype: 'string', dataLength: 60, dataPrecision: null, dataScale: null, dataDefault: null}}
-  //  dataObject: obj     // {name: 'division_Type', primaryKey: ['id'], seqName: null}
-  // }
-  public loadingConfig = new BehaviorSubject<boolean>(false);
-  public loadingConf$ = this.loadingConfig.asObservable();
-  public loadingSubject = new BehaviorSubject<boolean>(false);
-  public loadingSubject$ = this.loadingSubject.asObservable();
-  private rowsSubject = new BehaviorSubject<any[]>([]);
 
   // private subscriptions: Subscription[] = [];
   // on init    this.subscriptions.push(langSub);
@@ -30,52 +18,76 @@ export class SqlQueryDataSource implements DataSource<any> {
   constructor(private sqlQueryService: SqlQueryService, public errorDialogService: ErrorDialogService) {
   }
 
+  private fieldList: string;   // 'val1,val2,val3'
+  private fields: SourceRowConf[];
+  //  {
+  //   id: {desc: '', datatype: 'number', dataLength: 10, dataPrecision: 10, dataScale: 0, dataDefault: null},
+  //   code: {desc: '', datatype: 'varchar2', dataLength: 30, dataPrecision: null, dataScale: null, dataDefault: null},
+  //   name: {desc: '', datatype: 'varchar2', dataLength: 60, dataPrecision: null, dataScale: null, dataDefault: null}
+  // };
+  private dataObject: SourceObjConf;
+  // {name: 'division_Type', primaryKey: ['id'], seqName: null}
+
+
+
+  public cells: Cell[] = [];
+  // [ {cell: 'id', label: 'id', sorting: true, filtering: true},
+  //   {cell: 'code', label: 'code', sorting: true, filtering: true},
+  //   {cell: 'name', label: 'name', sorting: false, filtering: false}];
+  public actionColumnName = 'actionsColumn';
+
+  public loadingConfig = new BehaviorSubject<boolean>(false);
+  public loadingConf$ = this.loadingConfig.asObservable();
+  public loadingSubject = new BehaviorSubject<boolean>(false);
+  public loadingSubject$ = this.loadingSubject.asObservable();
+  private rowsSubject = new BehaviorSubject<any[]>([]);
+
   getFieldsConfig() {
-    return this.rowsConfig.fields;
+    return this.fields;
   }
 
-  buildConfig(confdata, objData) {
-    let fList = '';
-    let flds = {};
-    let obj = {}
-    if (objData.length = 1) {
-      obj = {name: objData[0].name, primaryKey: [objData[0].primaryKey], seqName: objData[0].seqName};
+  buildConfig(confdata: SourceRowConf[], objData) {
+    this.fields = confdata;
+    this.fieldList = confdata.map(data => data.name).join(',');
+// console.log('sql_query.datasource buildConfig confdata-> ' + JSON.stringify(confdata));
+// console.log('sql_query.datasource buildConfig fieldList-> ' + JSON.stringify(this.fieldList));
+    this.dataObject = new SourceObjConf(
+      objData[0].name,
+      objData.map(data => data.primaryKey),
+      objData[0].seqName
+    );
+  }
+
+  buildCellsSruct(clls, dataEditable: boolean) {
+    let cell: ViewCell[];
+    if ((!clls) || (clls.length === 0)) {
+      cell = this.fieldList.split(',').map(name => new ViewCell(name, name, false, false));
     } else {
-      let pk = [];
-      for (let i = 0; i < objData.length; i++) {
-        pk.push(objData.primaryKey);
+      cell = clls;
+    }
+// console.log('ql-query.datasource.buildCellsSruct cell.length:' + cell.length);
+// console.log('ql-query.datasource.buildCellsSruct this.fields.length:' + this.fields.length);
+    for (let i = 0; i < cell.length; i++) {
+      for (let j = 0; j < this.fields.length; j++) {
+        if (this.fields[j].name === cell[i].name) {
+// console.log('ql-query.datasource.buildCellsSruct i:' + i + ' j:'+j+' cell[i].name:' + cell[i].name + ' this.fields[j].name:' + this.fields[j].name);
+          this.cells.push (new Cell(
+            cell[i].name,
+            cell[i].label,
+            cell[i].sorting,
+            cell[i].filtering,
+            this.fields[j]
+          ));
+        }
       }
-      obj = {name: objData[0].name, primaryKey: pk, seqName: null};
     }
-    for (let i = 0; i < confdata.length; i++) {
-      fList += ',' + confdata[i].name;
-      flds[confdata[i].name] = confdata[i];
-    }
-    // console.log('sql_query.datasource buildConfig fieldList-> ' + fList.substring(1));
-    // console.log('sql_query.datasource buildConfig fields-> ' + JSON.stringify(flds));
-    // console.log('sql_query.datasource buildConfig dataObject-> ' + JSON.stringify(obj));
-    return {fieldList: fList.substring(1), fields: flds, dataObject: obj};
-  }
-
-  buildCellsSruct(clls) {
-    // console.log('sql_query.datasource buildCellsSruct this.rowsConfig.fields ->' + JSON.stringify(this.rowsConfig.fields));
-    for (let i = 0; i < clls.length; i++) {
-      // let currclls = {
-      //   name: displayedColumns[i],
-      //   label: displayedColumns[i],
-      //   sorting: null,
-      //   filtering: null
-      // };
-      // if (clls[displayedColumns[i]]) {
-      //   currclls.sorting = clls[displayedColumns[i]].sorting;
-      //   currclls.filtering = clls[displayedColumns[i]].filtering;
-      // }
-      this.cells.push(new Cell(
-        clls[i].cell,
-        clls[i].label,
-        clls[i].sorting,
-        clls[i].filtering,
-        this.rowsConfig.fields[clls[i].cell]
+    if (dataEditable) {
+      this.cells.push (new Cell(
+        this.actionColumnName,
+        this.actionColumnName,
+        null,
+        null,
+        null
       ));
     }
   }
@@ -89,7 +101,7 @@ export class SqlQueryDataSource implements DataSource<any> {
   }
 
   getFilterFromCells(): any {
-    let filterData = [];
+    const filterData = [];
     for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].filterData && this.cells[i].filterData.cond ) {
         filterData.push(this.cells[i].getCellFilter());
@@ -99,7 +111,7 @@ export class SqlQueryDataSource implements DataSource<any> {
   }
 
   getFilterFromCellsAsJson(): any {
-    let filterData = [];
+    const filterData = [];
     for (let i = 0; i < this.cells.length; i++) {
       if (this.cells[i].filterData && this.cells[i].filterData.cond ) {
         filterData.push(this.cells[i].getCellFilterJson());
@@ -109,27 +121,29 @@ export class SqlQueryDataSource implements DataSource<any> {
   }
 
 
-  getConfig(objName: string, displayedColumns, clls) {
+  getConfig(objName, clls, dataEditable) {
     this.loadingConfig.next(true);
     forkJoin([this.sqlQueryService.getConfDataSql(objName),
       this.sqlQueryService.getObjDescSql(objName)])
       .subscribe(results => {
-          this.rowsConfig = this.buildConfig(results[0], results[1]);
-          this.buildCellsSruct(displayedColumns, clls);
+          this.buildConfig(results[0], results[1]);
+          this.buildCellsSruct(clls, dataEditable);
 // console.log('sql-query.datasource this.cells ->' + JSON.stringify(this.cells));
-// console.log('getConfig ----1--->' + JSON.stringify(this.rowsConfig));
-// console.log('JSON.stringify(this.rowsConfig.dataObject) ->>' + JSON.stringify(this.rowsConfig))
           this.loadingConfig.next(false);
           this.getObjDataSql('', 0, 3);
+// console.log('sql-query.datasource.getConfig  this.fields->' + JSON.stringify(this.fields));
+// console.log('sql-query.datasource.getConfig  this.fieldList->' + JSON.stringify(this.fieldList));
+// console.log('sql-query.datasource.getConfig  this.dataObject->' + JSON.stringify(this.dataObject));
+// console.log('sql-query.datasource.getConfig  this.cells->' + JSON.stringify(this.cells));
         }
-      )
+      );
   }
 
   getObjDataSql(sortDirection: string, pageIndex: number, pageSize: number) {
-    console.log('sql-query.datasource.getObjDataSql  filter->' + JSON.stringify(this.getFilterFromCellsAsJson()));
+// console.log('sql-query.datasource.getObjDataSql  filter->' + JSON.stringify(this.getFilterFromCellsAsJson()));
     this.loadingSubject.next(true);
-this.cells// this.sqlQueryService.getObjDataSql(this.rowsConfig.dataObject.name, filter, sortDirection, pageIndex, pageSize, this.rowsConfig.fieldList)
-    this.sqlQueryService.getObjDataSqlAsPut(this.rowsConfig.dataObject.name, this.getFilterFromCellsAsJson(), sortDirection, pageIndex, pageSize, this.rowsConfig.fieldList)
+    // this.sqlQueryService.getObjDataSql(this.dataObject.name, filter, sortDirection, pageIndex, pageSize, this.fieldList)
+    this.sqlQueryService.getObjDataSqlAsPut(this.dataObject.name, this.getFilterFromCellsAsJson(), sortDirection, pageIndex, pageSize, this.fieldList)
       .pipe(
         catchError(err => {
             // this.notifier.showError(err.error.errormsg);
@@ -139,7 +153,7 @@ this.cells// this.sqlQueryService.getObjDataSql(this.rowsConfig.dataObject.name,
               status: err.status
             };
             this.errorDialogService.openDialog(data);
-            return of([])
+            return of([]);
           }
         ),
         finalize(() => this.loadingSubject.next(false))
@@ -152,7 +166,7 @@ this.cells// this.sqlQueryService.getObjDataSql(this.rowsConfig.dataObject.name,
 
 
   addObjDataSql(data) {
-    this.sqlQueryService.addObjDataSql(this.rowsConfig.dataObject, data)
+    this.sqlQueryService.addObjDataSql(this.dataObject, data)
       .pipe(
         catchError(err => {
             let data = {};
@@ -161,7 +175,7 @@ this.cells// this.sqlQueryService.getObjDataSql(this.rowsConfig.dataObject.name,
               status: err.status
             };
             this.errorDialogService.openDialog(data);
-            return of([])
+            return of([]);
           }
         ),
         finalize(() => this.loadingSubject.next(false))
@@ -179,7 +193,7 @@ this.cells// this.sqlQueryService.getObjDataSql(this.rowsConfig.dataObject.name,
   }
 
   editObjDataSql(data) {
-    this.sqlQueryService.editObjDataSql(this.rowsConfig.dataObject, data)
+    this.sqlQueryService.editObjDataSql(this.dataObject, data)
       .pipe(
         catchError(err => {
             let data = {};
@@ -188,7 +202,7 @@ this.cells// this.sqlQueryService.getObjDataSql(this.rowsConfig.dataObject.name,
               status: err.status
             };
             this.errorDialogService.openDialog(data);
-            return of([])
+            return of([]);
           }
         ),
         finalize(() => this.loadingSubject.next(false))
@@ -206,7 +220,7 @@ this.cells// this.sqlQueryService.getObjDataSql(this.rowsConfig.dataObject.name,
   }
 
   delObjDataSql(id) {
-    this.sqlQueryService.delObjDataSql(this.rowsConfig.dataObject.name, this.rowsConfig.dataObject.primaryKey, id)
+    this.sqlQueryService.delObjDataSql(this.dataObject.name, this.dataObject.primaryKey, id)
       .pipe(
         catchError(err => {
             let data = {};
@@ -215,7 +229,7 @@ this.cells// this.sqlQueryService.getObjDataSql(this.rowsConfig.dataObject.name,
               status: err.status
             };
             this.errorDialogService.openDialog(data);
-            return of([])
+            return of([]);
           }
         ),
         finalize(() => this.loadingSubject.next(false))

@@ -1,48 +1,55 @@
+<!--outside container-->
 <ng-container
   *ngIf="(dataSource.loadingConf$ | async); then spinTempl; else dataTempl">
 </ng-container>
-<!---->
+
+<!--  outside spin template-->
 <ng-template #spinTempl>
   <div>
     <mat-spinner></mat-spinner>
   </div>
 </ng-template>
-<!---->
+
+<!--  core template-->
 <ng-template #dataTempl>
-<div class="div-type">
+<div class="div-table">
   <mat-form-field>
     <input matInput placeholder="Search div type" #input>
   </mat-form-field>
 
+  <!--  inside spin-->
   <div class="spinner-container" *ngIf="dataSource.loadingSubject$ | async">
     <mat-spinner></mat-spinner>
   </div>
 
-  <!--matSortActive="ID" matSortDirection="asc"-->
-  <mat-table class="lessons-table mat-elevation-z8" [dataSource]="dataSource"
+  <!--  material table-->
+  <mat-table class="mat-container mat-elevation-z8" [dataSource]="dataSource"
              matSort matSortDisableClear>
 
-      <!--for coll of cells-->
+      <!--  cells container-->
       <ng-container *ngFor="let col of dataSource.cells" [matColumnDef]="col.name">
 
         <!--<mat-header-cell #thenBlock *matHeaderCellDef mat-sort-header> {{col.label}} </mat-header-cell>-->
 
-        <!--header-->
+        <!-- header-->
         <mat-header-cell *matHeaderCellDef mat-sort-header [disabled]="!col.isSorting">
-          <!--simple header-->
+
+          <!--  data header-->
           <div *ngIf="!(col.filterType)">
             {{col.label}}
           </div>
-          <!--sort or filter header-->
+
+          <!--  filter header-->
           <div *ngIf="(col.filterType)">
-            <!--filter button-->
+            <!--  filters button-->
             <div class="header">
               {{col.filterData.headerName}}
               <button mat-button class="btn-toggle" [matMenuTriggerFor]="menu" (click)="$event.stopPropagation()">
                 <mat-icon>keyboard_arrow_down</mat-icon>
               </button>
             </div>
-            <!--menu structure-->
+
+            <!--  filter menu structure-->
             <mat-menu #menu>
               <div (click)="$event.stopPropagation()">
                 <div mat-menu-item mat-filter-item [disableRipple]="true" class="menu-title">
@@ -76,8 +83,8 @@
             </mat-menu>
           </div>
 
-          <!--editable header-->
-          <div *ngIf="col.label == 'actionsColumn' ">
+          <!--  add button header-->
+          <div *ngIf="col.label == dataSource.actionColumnName ">
             <button mat-icon-button color="accent" (click)="openAddDialog()">
               <mat-icon>add</mat-icon>
             </button>
@@ -85,9 +92,9 @@
 
         </mat-header-cell>
 
-
-        <div *ngIf="col.label == 'actionsColumn' ">
-          <mat-cell *matCellDef="let row">
+        <!--  material action colemn cell -->
+        <div *ngIf="col.label == dataSource.actionColumnName ">
+          <mat-cell *matCellDef="let row" >
             <button *ngIf="!row.editing" mat-icon-button color="primary" focusable="false"
                     (click)="openEditDialog(row)">
               <mat-icon>edit</mat-icon>
@@ -103,16 +110,19 @@
           </mat-cell>
         </div>
 
-        <div *ngIf="!(col.label == 'actionsColumn') ">
-          <mat-cell *matCellDef="let row"> {{row[col.name]}}</mat-cell>
+        <!--  material data cells-->
+        <div *ngIf="!(col.label == dataSource.actionColumnName) ">
+          <mat-cell *matCellDef="let row" > {{row[col.name]}}</mat-cell>
         </div>
 
       </ng-container>
 
+    <!--header row-->
     <mat-header-row *matHeaderRowDef="getDisplCols()"></mat-header-row>
     <mat-row *matRowDef="let row; columns: getDisplCols()"></mat-row>
   </mat-table>
 
+  <!--material paginator-->
   <mat-paginator [length]="9" [pageSize]="3"
                  [pageSizeOptions]="[3, 5, 10]"></mat-paginator>
 </div>

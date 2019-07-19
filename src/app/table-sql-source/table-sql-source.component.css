@@ -1,0 +1,7 @@
+.mat-cell, mat-header-cell{
+  flex: 0 0 100px;
+  font-size: 12px;
+}
+.mat-container {
+  overflow: auto;
+}

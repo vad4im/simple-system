@@ -1,5 +1,49 @@
 import {FilterCol} from '../core/db-query/query-filter';
 
+
+export class SourceObjConf {
+  name: string;
+  primaryKey: [];
+  seqName: string;
+  constructor (name, primaryKey, seqName){
+    this.name = name;
+    this.primaryKey = primaryKey;
+    this.seqName = seqName;
+  }
+}
+
+export class SourceRowConf {
+  name: string;
+  desc: string;
+  datatype: string;
+  dataLength: number;
+  dataPrecision: number;
+  dataScale: number;
+  dataDefault: string
+  constructor (name, desc, datatype, dataLength, dataPrecision, dataScale, dataDefault){
+  this.name = name;
+  this.desc = desc;
+  this.datatype = datatype;
+  this.dataLength = dataLength;
+  this.dataPrecision = dataPrecision;
+  this.dataScale = dataScale;
+  this.dataDefault = dataDefault;
+  }
+}
+
+export class ViewCell {
+  name: string;
+  label: string;
+  sorting: boolean;
+  filtering: boolean;
+  constructor (name, label, filtering, sorting){
+    this.name = name;
+    this.label = label;
+    this.sorting = sorting;
+    this.filtering = filtering;
+  }
+}
+
 export class Cell {
   name: string;
   label: string;
@@ -9,6 +53,7 @@ export class Cell {
   filterData: FilterCol;
 
   constructor(name: string, label: string, sortting: boolean, filtering: boolean, fieldDesc: {}) {
+// console.log('Cell.constructor name: ' + name);
     this.name = name;
     this.sortval = null;
     this.isSorting = (sortting === null) ? false : sortting;
@@ -82,8 +127,11 @@ function getDataType(fieldDesc) {
 }
 
 const DATA_TYPE_FUNCTION = {
+  char(fieldDesc) {
+    return 'string';
+  },
   varchar2(fieldDesc) {
-    if (fieldDesc.dataLength < 256) {
+    if (fieldDesc.dataLength < 3000) {
       return 'string';
     } else {
       throw new TypeError('fieldDesc.dataLength' + fieldDesc.dataLength);
@@ -95,7 +143,12 @@ const DATA_TYPE_FUNCTION = {
   number(fieldDesc) {
     return 'number';
   },
+  date(fieldDesc) {
+    return 'date';
+  },
+
   actionsColumn(fieldDesc) {
     return 'actionsColumn';
   }
+
 };

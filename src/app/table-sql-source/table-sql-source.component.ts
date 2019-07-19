@@ -3,7 +3,7 @@ import {MatDialog, MatPaginator, MatSort, MatTableDataSource} from '@angular/mat
 import {ActivatedRoute} from '@angular/router';
 import {fromEvent, merge} from 'rxjs/index';
 import {tap} from 'rxjs/internal/operators';
-import {Cell} from '../mat-table-cells/cell';
+import {Cell, ViewCell} from '../mat-table-cells/cell';
 import {ErrorDialogService} from '../core/error-handle/error-dialog/errordialog.service';
 import {SqlQueryService} from './sql-query.service';
 import {SqlQueryDataSource} from './sql-query.datasource';
@@ -27,14 +27,15 @@ export class TableSqlSourceComponent implements OnInit{
   public paginatorDisable = false;  // ???????
 
   public dataEditable = true;
-  public tableName = 'division_Type';
-  public clls = [
-     {cell: 'id', label: 'id', sorting: true, filtering: true},
-     {cell: 'code', label: 'code', sorting: true, filtering: true},
-     {cell: 'name', label: 'name', sorting: false, filtering: false}
-  ];
+  public tableName = 'division';
+  public clls = null;
+  // = [
+  //   new ViewCell('id', 'id', true, true),
+  //   new ViewCell('code', 'code', true, true),
+  //   new ViewCell('name', 'name', true, true)
+  // ];
 
-  public displayedColumns: string[] = ['id', 'code', 'name'];
+  // public displayedColumns: string[] = ['id', 'code', 'name', 'actionsColumn'];
   // public fields = {
   //   id: {desc: '', datatype: 'number', dataLength: 10, dataPrecision: 10, dataScale: 0, dataDefault: null},
   //   code: {desc: '', datatype: 'varchar2', dataLength: 30, dataPrecision: null, dataScale: null, dataDefault: null},
@@ -51,9 +52,8 @@ export class TableSqlSourceComponent implements OnInit{
 
   ngOnInit() {
     this.dataSource = new SqlQueryDataSource(this.sqlQueryService, this.errorDialogService);
-    if (this.dataEditable) { this.addDisplCols('actionsColumn'); };
 
-    this.dataSource.getConfig(this.tableName, this.clls);
+    this.dataSource.getConfig(this.tableName, this.clls, this.dataEditable);
 
     this.dataSource.loadingSubject
       .subscribe(value => {
@@ -76,15 +76,9 @@ export class TableSqlSourceComponent implements OnInit{
       });
   }
 
-
   getDisplCols(){
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    return this.displayedColumns;
+    return   this.dataSource.cells.map((cell) => cell.name );
   }
-  addDisplCols(value: string, label: string, sorting: boolean, filtering: boolean){
-  this.clls.push({"cell": value, "label": label, "sorting": sorting, "filtering": filtering});
-  }
-
 
   // call from html
   applyFilter() {
@@ -127,13 +121,13 @@ export class TableSqlSourceComponent implements OnInit{
   }
 
   openAddDialog() {
-    const dialogRef = this.dialog.open(TableEditDialogComponent
-      , {
-        data: {
-          value: {id: '82', code: 'new_code', name: 'new name'},
+    const dialogRef = this.dialog.open(TableEditDialogComponent,
+        {data: {
+          value: null,
+          //{id: '82', code: 'new_code', name: 'new name'},
           config: this.dataSource.getFieldsConfig()
-        }
-      });
+        }}
+        );
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
 // console.log('TableSqlSource.component.openAddListDialog.result -> ' + JSON.stringify(result));
@@ -144,11 +138,13 @@ export class TableSqlSourceComponent implements OnInit{
 
 
   openEditDialog(row) {
-    console.log('table-sql-route.component.openEditDialog rowData' + JSON.stringify(row));
+// console.log('table-sql-route.component.openEditDialog rowData' + JSON.stringify(row));
+console.log('TableSqlSource.component.openEditDialog row -> ' + JSON.stringify(row));
     const dialogRef = this.dialog.open(TableEditDialogComponent
       , {data: {value: row, config: this.dataSource.getFieldsConfig()}});
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+console.log('TableSqlSource.component.openEditDialog result.sqlObj -> ' + JSON.stringify(result.sqlObj));
         this.editObjDataSql(result.sqlObj);
       }
     });
@@ -156,7 +152,7 @@ export class TableSqlSourceComponent implements OnInit{
   }
 
   openDeleteDialog(row) {
-    console.log('table-sql-route.component.openDeleteDialog rowData' + JSON.stringify(row));
+// console.log('table-sql-route.component.openDeleteDialog rowData' + JSON.stringify(row));
     const dialogRef = this.dialog.open(TableEditDialogComponent
       , {data: {value: row, config: this.dataSource.getFieldsConfig()}});
     dialogRef.afterClosed().subscribe(result => {
