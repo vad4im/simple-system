@@ -45,7 +45,7 @@
     "saturn-datepicker": "7.2.0",
     "tslib": "1.9.0",
     "vkbeautify": "0.99.3",
-    "xlsx": "0.14.1",
+    "xlsx": "0.17.0",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
